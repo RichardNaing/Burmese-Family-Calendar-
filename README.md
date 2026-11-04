@@ -2,6 +2,8 @@
 
 A Burmese-first family wall calendar. Every day shows the Gregorian date **and** its Myanmar lunar date, moon phase, Sabbath (ဥပုသ်) days, and Myanmar + Thai (+ optional US) holidays — the same information as the printed *Myanmar & Thailand Calendar*, plus a clock, family events and Google Calendar.
 
+**Live:** https://richardnaing.github.io/Burmese-Family-Calendar-/ (GitHub Pages) — open it on the wall tablet and tap the full-screen button.
+
 ## Views
 
 | View | What it shows |
