@@ -22,4 +22,6 @@ const b = html.indexOf('rel="stylesheet">') + 'rel="stylesheet">'.length;
 html = html.slice(0, a) + `<style>${css}</style>` + html.slice(b);
 html = html.replace('/*ENGINE*/', () => engineSource().replaceAll('</script', '<\\/script'));
 writeFileSync('index.html', html);
+// Copy for GitHub Pages when the source folder is set to /docs.
+writeFileSync('docs/index.html', html);
 console.log(`index.html written (${(html.length / 1024).toFixed(0)} KB)`);
