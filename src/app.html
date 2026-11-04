@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Burmese Family Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Noto+Sans+Myanmar:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#9B1C1C; --black:#1A1A1A; --gold:#C9A227; --gold-soft:#E9D9A6;
+  --paper:#FAF6EE; --card:#FFFFFF; --line:#2a2a2a; --muted:#6b6459;
+  --hol:#F2C4C4; --obs:#BFD5EE; --jade:#2E7D5B; --us:#D9D2F2;
+  --mm:"Noto Sans Myanmar","Pyidaungsu","Padauk","Myanmar Text","Myanmar Sangam MN",sans-serif;
+  --lat:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--black);font-family:var(--lat);-webkit-font-smoothing:antialiased}
+.my{font-family:var(--mm);line-height:1.7}
+button{font:inherit;cursor:pointer}
+/* ---------- top bar ---------- */
+.bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--black);color:#fff;position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+.brand .mark{width:30px;height:30px;flex:none}
+.brand b{font-weight:800;letter-spacing:.2px;white-space:nowrap}
+.brand span{font-family:var(--mm);color:var(--gold-soft);font-size:14px;white-space:nowrap}
+.tabs{display:flex;background:#2b2b2b;border-radius:10px;padding:3px}
+.tabs button{background:none;border:0;color:#cfcfcf;padding:6px 12px;border-radius:8px;font-weight:600;font-size:14px}
+.tabs button.on{background:var(--gold);color:#1a1a1a}
+.ib{background:#2b2b2b;border:0;color:#fff;width:36px;height:36px;border-radius:10px;display:grid;place-items:center}
+.ib svg{width:18px;height:18px}
+/* ---------- month (print style) ---------- */
+.month{max-width:1180px;margin:18px auto;padding:0 14px 30px}
+.mhead{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:14px;background:var(--card);padding:14px 18px 0;border:1px solid #e6dfcf;border-bottom:0;border-radius:14px 14px 0 0}
+.mhead .en h1{margin:0;font-size:40px;line-height:1;font-weight:800;color:var(--black)}
+.mhead .en small{display:block;margin-top:6px;font-size:13px;color:var(--muted);font-family:var(--mm)}
+.mnum{background:var(--black);color:#fff;font-weight:800;font-size:46px;min-width:96px;padding:6px 18px 4px;text-align:center;border-radius:10px 10px 0 0;line-height:1.15}
+.mhead .mmy{justify-self:end;text-align:right;font-family:var(--mm);font-size:20px;color:var(--red);line-height:1.8;padding-bottom:6px}
+.mhead .mmy small{display:block;font-size:12.5px;color:var(--muted);font-family:var(--lat)}
+.navrow{display:flex;gap:8px;align-items:center;justify-content:space-between;background:var(--card);border-left:1px solid #e6dfcf;border-right:1px solid #e6dfcf;padding:8px 18px 10px}
+.navrow .kanote{flex:1;height:22px;background:var(--kanote) repeat-x center/auto 22px;opacity:.9}
+.pill{border:1px solid #d9cfb8;background:#fff;border-radius:999px;padding:6px 14px;font-weight:600;font-size:14px;color:var(--black)}
+.pill:hover{border-color:var(--gold)}
+.wdbar{display:grid;grid-template-columns:repeat(7,1fr);background:var(--black);gap:3px;padding:3px}
+.wdbar div{background:#111;color:#fff;text-align:center;padding:6px 2px 4px;border:1px solid #444}
+.wdbar b{display:block;font-weight:700;font-size:17px;font-style:italic}
+.wdbar span{display:block;font-family:var(--mm);font-size:11.5px;color:#bdbdbd;line-height:1.6}
+.wdbar .we b{color:#F4A9A9}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);border-left:2px solid var(--line);border-top:2px solid var(--line);background:var(--card)}
+.cell{position:relative;min-height:122px;border-right:2px solid var(--line);border-bottom:2px solid var(--line);display:flex;flex-direction:column;cursor:pointer;background:var(--card);transition:background .15s}
+.cell:hover{background:#fffbef}
+.cell.out{background:#f6f3ec;cursor:default}
+.cell.out .gd{color:#c9c3b6}
+.cell .top{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:4px 8px 0;min-height:48px}
+.cell.ph .top{background:var(--hol)}
+.cell .hn-top{margin-right:auto;font-family:var(--mm);font-size:11.5px;line-height:1.5;color:#5a1414;font-weight:500;max-width:62%}
+.gd{font-weight:800;font-size:34px;line-height:1.2;font-variant-numeric:tabular-nums}
+.moon{width:16px;height:16px;border-radius:50%;flex:none}
+.moon.full{background:var(--red)} .moon.new{background:var(--black)}
+.cell .low{padding:2px 7px 6px;display:flex;flex-direction:column;gap:2px;flex:1}
+.fd{font-family:var(--mm);font-size:15px;line-height:1.5;color:#222}
+.ph-lbl{font-family:var(--mm);font-size:12px;line-height:1.6;color:#333}
+.tag{font-size:11.5px;line-height:1.35;padding:2px 5px;border-radius:4px;margin:0 -3px}
+.tag.th{background:var(--obs)} .tag.us{background:var(--us)} .tag.obs{background:#efe7d2}
+.tag.my{font-family:var(--mm);line-height:1.6}
+.sab{position:absolute;left:6px;top:6px;width:9px;height:9px;border-radius:50%;border:2px solid var(--gold);background:#fff}
+.sab.eve{width:7px;height:7px;border-width:1.5px;opacity:.6;left:7px;top:7px}
+.cell.today{box-shadow:inset 0 0 0 3px var(--red)}
+.cell.today .gd{color:var(--red)}
+.astro{font-family:var(--mm);font-size:11px;line-height:1.5;color:var(--jade)}
+.astro.bad{color:#a1452a}
+.ev{font-size:11.5px;line-height:1.3;border-left:3px solid var(--gold);padding:1px 4px;background:#fbf6e7;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.gc{border-left-color:#4f7fd8;background:#edf3fd}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:13px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.legend .my{font-size:12.5px}
+/* ---------- wall ---------- */
+.wall{position:fixed;inset:56px 0 0 0;display:grid;grid-template-columns:minmax(320px,40%) 1fr;background:#0d0c0b;color:#f3efe6}
+.wall.dim{filter:brightness(.55)}
+.wl{position:relative;overflow:hidden;padding:28px 30px;display:flex;flex-direction:column;gap:14px;background:radial-gradient(120% 90% at 20% 0%,#5e1616 0%,#2a0b0b 45%,#120707 100%)}
+.wl:before{content:"";position:absolute;inset:0;background:var(--kanote-tile);opacity:.07;pointer-events:none}
+.wl>*{position:relative}
+.clock{font-weight:500;font-size:88px;line-height:1;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.clock sup{font-size:28px;letter-spacing:0;margin-left:4px;color:#d9c48a}
+.gdate{font-size:20px;color:#e7dccb;font-weight:500}
+.mdate{font-family:var(--mm);font-size:25px;line-height:1.75;color:var(--gold-soft)}
+.mdate small{display:block;font-size:15px;color:#cdbf9f}
+.badges{display:flex;flex-wrap:wrap;gap:8px}
+.badge{font-family:var(--mm);font-size:14px;line-height:1.6;padding:3px 12px;border-radius:999px;background:rgba(201,162,39,.18);border:1px solid rgba(201,162,39,.55);color:#f4e4b0}
+.badge.red{background:rgba(155,28,28,.45);border-color:#c94a4a;color:#ffdede}
+.moonrow{display:flex;align-items:center;gap:16px;margin-top:4px}
+.moonrow svg{width:74px;height:74px;flex:none;filter:drop-shadow(0 0 14px rgba(255,240,200,.25))}
+.moonrow .my{font-size:15px;color:#e8dcc4;line-height:1.75}
+.wl h3{margin:6px 0 0;font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:#bfae86;font-weight:600}
+.uplist{display:flex;flex-direction:column;gap:6px}
+.up{display:flex;gap:12px;align-items:baseline;font-size:14.5px}
+.up .d{min-width:62px;color:#d9c48a;font-weight:600;font-variant-numeric:tabular-nums}
+.up .t{font-family:var(--mm);line-height:1.6}
+.wr{padding:22px 24px 18px;display:flex;flex-direction:column;min-width:0}
+.wr .wh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;gap:10px}
+.wr .wh b{font-size:24px;font-weight:700}
+.wr .wh span{font-family:var(--mm);color:#c9b98e;font-size:16px;line-height:1.7}
+.wgrid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:auto repeat(4,1fr);gap:0}
+.wgrid .wd{text-align:center;color:#a8a29a;font-weight:600;font-size:15px;padding-bottom:8px}
+.wgrid .wd span{display:block;font-family:var(--mm);font-size:11px;color:#77716a;font-weight:400;line-height:1.5}
+.wc{border-top:1px solid #2a2724;padding:8px 6px;min-width:0;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.wc .n{display:flex;align-items:center;gap:6px;font-size:30px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.15}
+.wc .n .mn{font-size:15px;color:#a8a29a;font-weight:500}
+.wc.today .n b{background:#c62828;color:#fff;border-radius:50%;width:46px;height:46px;display:inline-grid;place-items:center;font-weight:600}
+.wc .n b{font-weight:500}
+.wc.ph .n b{color:#ff9b9b}
+.wc.today.ph .n b{color:#fff}
+.wc .l{font-family:var(--mm);font-size:12px;color:#b8ab8e;line-height:1.55}
+.wc .l .fm{color:#ff8a8a} .wc .l .nm{color:#fff}
+.wc .h{font-size:11.5px;color:#ffb3b3;line-height:1.35;font-family:var(--mm)}
+.wc .h.th{color:#9cc1ec} .wc .h.us{color:#c7bcf2}
+.wc .e{font-size:11.5px;color:#e9e3d6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wc .e:before{content:"•";color:var(--gold);margin-right:4px}
+.wc .e.gc:before{color:#6d9bf0}
+.wdot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.wdot.full{background:#e04848} .wdot.new{background:#000;border:1.5px solid #bbb}
+.wfoot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:#7f786f;font-size:12px}
+/* ---------- year ---------- */
+.year{max-width:1180px;margin:18px auto;padding:0 14px 30px}
+.year h2{margin:0 0 4px;font-size:34px;font-weight:800}
+.year .sub{font-family:var(--mm);color:var(--red);font-size:17px;line-height:1.7;margin-bottom:14px}
+.ygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.ym{background:#fff;border:1px solid #e6dfcf;border-radius:12px;padding:12px;cursor:pointer}
+.ym:hover{border-color:var(--gold)}
+.ym h4{margin:0;display:flex;justify-content:space-between;align-items:baseline;font-size:16px}
+.ym h4 span{font-family:var(--mm);font-weight:400;font-size:11.5px;color:var(--muted)}
+.ymg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:8px;font-size:12px;text-align:center}
+.ymg .w{color:#999;font-weight:600;font-size:10.5px}
+.ymg div{position:relative;padding:3px 0;border-radius:4px;font-variant-numeric:tabular-nums}
+.ymg .ph{background:var(--hol)} .ymg .tht{box-shadow:inset 0 -3px 0 #7fa8d8}
+.ymg .fm{background:var(--red);color:#fff;border-radius:50%} .ymg .nm{background:var(--black);color:#fff;border-radius:50%}
+.ymg .td{outline:2px solid var(--gold)}
+/* ---------- dialogs ---------- */
+dialog{border:0;border-radius:16px;padding:0;max-width:520px;width:calc(100% - 24px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(20,10,5,.5)}
+.dh{background:var(--black);color:#fff;padding:16px 20px;position:relative}
+.dh .big{font-size:26px;font-weight:800}
+.dh .my{color:var(--gold-soft);font-size:17px}
+.dh .x{position:absolute;right:12px;top:12px;background:#2b2b2b;border:0;color:#fff;width:32px;height:32px;border-radius:8px}
+.db{padding:14px 20px 18px;max-height:65vh;overflow:auto}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 12px;font-size:14px;margin-bottom:12px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.sec{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:700;margin:14px 0 6px}
+.hl{display:flex;flex-direction:column;gap:6px}
+.hl div{padding:6px 10px;border-radius:8px;font-size:14px}
+.evrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #eee;font-size:14px}
+.evrow .tm{color:var(--muted);min-width:52px;font-variant-numeric:tabular-nums}
+.evrow .who{font-size:12px;padding:1px 8px;border-radius:999px;background:#f1ead6}
+.evrow button{margin-left:auto;border:0;background:none;color:#a33;font-size:13px}
+form.add{display:grid;grid-template-columns:1fr 92px;gap:8px;margin-top:10px}
+form.add input{font:inherit;padding:8px 10px;border:1px solid #d9cfb8;border-radius:8px;min-width:0}
+form.add .full{grid-column:1/-1}
+.btn{background:var(--red);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:600}
+.btn.ghost{background:#fff;color:var(--black);border:1px solid #d9cfb8}
+.note{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.set label{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eee;font-size:15px}
+.set label small{display:block;color:var(--muted);font-size:12.5px}
+.set select{font:inherit;padding:5px 8px;border-radius:8px;border:1px solid #d9cfb8}
+.set input[type=checkbox]{width:20px;height:20px;accent-color:var(--red)}
+.gcnote{margin-top:10px;padding:10px 12px;border-radius:10px;background:#edf3fd;font-size:13.5px;line-height:1.5;display:none}
+.gcnote.show{display:block}
+.hidden{display:none!important}
+@media (max-width:820px){
+  .mhead{grid-template-columns:1fr;gap:4px}
+  .mnum{display:none}
+  .mhead .mmy{justify-self:start;text-align:left}
+  .mhead .en h1{font-size:30px}
+  .cell{min-height:86px}
+  .gd{font-size:22px}
+  .cell .top{min-height:34px;padding:2px 5px 0}
+  .cell .hn-top,.ph-lbl,.tag,.ev,.astro{display:none}
+  .fd{font-size:13px}
+  .wdbar b{font-size:14px}.wdbar span{display:none}
+  .brand span{display:none}
+  .wall{grid-template-columns:1fr;overflow:auto;position:static;min-height:calc(100vh - 56px)}
+  .clock{font-size:64px}
+}
+@media (max-width:520px){ .tabs button{padding:6px 8px;font-size:13px} .brand b{display:none} }
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="#9B1C1C"/><path d="M20 8c-5 5-5 11 0 16 5-5 5-11 0-16z" fill="#C9A227"/><path d="M9 21c4 1 8 4 11 9 3-5 7-8 11-9-4 6-7 9-11 10-4-1-7-4-11-10z" fill="#E9D9A6"/><circle cx="20" cy="20" r="18" fill="none" stroke="#C9A227" stroke-width="1.5"/></svg>
+    <b>Family Calendar</b><span>မိသားစု ပြက္ခဒိန်</span>
+  </div>
+  <div class="tabs" role="tablist">
+    <button data-v="wall">Wall</button><button data-v="month">Month</button><button data-v="year">Year</button>
+  </div>
+  <button class="ib" id="fsBtn" title="Full screen" aria-label="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  <button class="ib" id="setBtn" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+</div>
+
+<main id="app"></main>
+
+<dialog id="dayDlg"></dialog>
+<dialog id="setDlg">
+  <div class="dh"><div class="big">Settings</div><div class="my">ဆက်တင်များ</div><button class="x" data-close>✕</button></div>
+  <div class="db set">
+    <label><span>Myanmar holidays<small>Public holidays &amp; Thingyan (red)</small></span><input type="checkbox" data-s="mm"></label>
+    <label><span>Thai holidays<small>Royal &amp; Buddhist days (blue)</small></span><input type="checkbox" data-s="th"></label>
+    <label><span>US holidays<small>Federal holidays (purple)</small></span><input type="checkbox" data-s="us"></label>
+    <label><span>Sabbath markers<small>ဥပုသ်နေ့ / အဖိတ်နေ့ — gold ring on the day</small></span><input type="checkbox" data-s="sab"></label>
+    <label><span>Astrology layer<small>ရက်ရာဇာ · ပြဿဒါး on the month grid</small></span><input type="checkbox" data-s="astro"></label>
+    <label><span>Google Calendar events<small>Shows events from your connected Google Calendar</small></span><input type="checkbox" data-s="gcal"></label>
+    <label><span>Night dimming<small>Wall view dims 10 pm – 6 am</small></span><input type="checkbox" data-s="dim"></label>
+    <label><span>Week starts on</span><select data-s="wk"><option value="0">Sunday</option><option value="1">Monday</option></select></label>
+    <p class="note">Lunar dates use Dr. Yan Naing Aye's Myanmar calendar algorithm (MIT). 2027 public &amp; Thai holidays follow the printed 2027 Myanmar &amp; Thailand calendar; other years use the standard holiday rules, so check government announcements for one-off extra days.</p>
+  </div>
+</dialog>
+
+<script>
+/*ENGINE*/
+</script>
+<script>
+"use strict";
+// ================= labels =================
+const BD='၀၁၂၃၄၅၆၇၈၉';
+const bn=n=>String(n).replace(/\d/g,c=>BD[c]);
+const MM_MONTH=['ပထမဝါဆို','တန်ခူး','ကဆုန်','နယုန်','ဝါဆို','ဝါခေါင်','တော်သလင်း','သီတင်းကျွတ်','တန်ဆောင်မုန်း','နတ်တော်','ပြာသို','တပို့တွဲ','တပေါင်း','နှောင်းတန်ခူး','နှောင်းကဆုန်'];
+const MM_MONTH_EN=['First Waso','Tagu','Kason','Nayon','Waso','Wagaung','Tawthalin','Thadingyut','Tazaungmon','Nadaw','Pyatho','Tabodwe','Tabaung','Late Tagu','Late Kason'];
+const PHASE=['လဆန်း','လပြည့်','လဆုတ်','လကွယ်'];
+const PHASE_EN=['Waxing','Full moon','Waning','New moon'];
+const WD_EN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const WD_EN_L=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const WD_MM=['တနင်္ဂနွေ','တနင်္လာ','အင်္ဂါ','ဗုဒ္ဓဟူး','ကြာသပတေး','သောကြာ','စနေ'];
+const GM_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const GM_MM=['ဇန်နဝါရီ','ဖေဖော်ဝါရီ','မတ်','ဧပြီ','မေ','ဇွန်','ဇူလိုင်','ဩဂုတ်','စက်တင်ဘာ','အောက်တိုဘာ','နိုဝင်ဘာ','ဒီဇင်ဘာ'];
+const DIR_MM=['အနောက်','မြောက်','အရှေ့','တောင်'];
+const DIR_EN=['West','North','East','South'];
+const HOL_MM={
+ "Buddha Day":"ကဆုန်လပြည့် ဗုဒ္ဓနေ့","Start of Buddhist Lent":"ဓမ္မစကြာနေ့ (ဝါဆိုလပြည့်)","End of Buddhist Lent":"သီတင်းကျွတ်ပွဲတော်",
+ "Tazaungdaing":"တန်ဆောင်တိုင်ပွဲတော်","National Day":"အမျိုးသားနေ့","Karen New Year's Day":"ကရင်နှစ်သစ်ကူး","Tabaung Pwe":"တပေါင်းပွဲတော်",
+ "Thingyan Akyo":"သင်္ကြန်အကြို","Thingyan Akya":"သင်္ကြန်အကျ","Thingyan Akyat":"သင်္ကြန်အကြတ်","Thingyan Atat":"သင်္ကြန်အတက်",
+ "Myanmar New Year's Day":"နှစ်ဆန်းတစ်ရက်","New Year's Day":"နိုင်ငံတကာနှစ်သစ်ကူး","Independence Day":"လွတ်လပ်ရေးနေ့","Union Day":"ပြည်ထောင်စုနေ့",
+ "Peasants' Day":"တောင်သူလယ်သမားနေ့","Resistance Day":"တပ်မတော်နေ့","Labour Day":"အလုပ်သမားနေ့","Martyrs' Day":"အာဇာနည်နေ့",
+ "Christmas Day":"ခရစ္စမတ်နေ့","Holiday":"ရုံးပိတ်ရက်"};
+// Myanmar public holidays for 2027, transcribed from the printed 2027 calendar (red days)
+const MM_2027={"01-01":["နိုင်ငံတကာနှစ်သစ်ကူး","New Year's Day"],"01-04":["လွတ်လပ်ရေးနေ့","Independence Day"],"01-08":["ကရင်နှစ်သစ်ကူး","Karen New Year"],
+ "02-07":["တရုတ်နှစ်သစ်ကူး","Chinese New Year"],"02-12":["ပြည်ထောင်စုနေ့","Union Day"],"03-01":["တောင်သူလယ်သမားနေ့","Peasants' Day"],"03-02":["ရုံးပိတ်ရက်","Holiday"],
+ "03-22":["တပေါင်းပွဲတော်","Tabaung Full Moon"],"03-27":["တပ်မတော်နေ့","Armed Forces Day"],"04-10":["ရုံးပိတ်ရက်","Holiday"],"04-11":["ရုံးပိတ်ရက်","Holiday"],
+ "04-12":["ရုံးပိတ်ရက်","Holiday"],"04-13":["သင်္ကြန်အကြို","Thingyan Akyo"],"04-14":["သင်္ကြန်အကျ","Thingyan Akya"],"04-15":["သင်္ကြန်အကြတ်","Thingyan Akyat"],
+ "04-16":["သင်္ကြန်အတက်","Thingyan Atat"],"04-17":["နှစ်ဆန်းတစ်ရက်","Myanmar New Year"],"04-18":["ရုံးပိတ်ရက်","Holiday"],"05-01":["အလုပ်သမားနေ့","Labour Day"],
+ "05-20":["ကဆုန်လပြည့် ဗုဒ္ဓနေ့","Buddha Day"],"05-21":["ရုံးပိတ်ရက်","Holiday"],"07-18":["ဓမ္မစကြာနေ့","Waso Full Moon"],"07-19":["အာဇာနည်နေ့","Martyrs' Day"],
+ "10-14":["ရုံးပိတ်ရက်","Holiday"],"10-15":["သီတင်းကျွတ်ပွဲတော်","Thadingyut"],"10-16":["ရုံးပိတ်ရက်","Holiday"],"11-13":["တန်ဆောင်တိုင်ပွဲတော်","Tazaungdaing"],
+ "11-22":["ရုံးပိတ်ရက်","Holiday"],"11-23":["အမျိုးသားအောင်ပွဲနေ့","National Day"],"12-25":["ခရစ္စမတ်နေ့","Christmas Day"],"12-27":["ရုံးပိတ်ရက်","Holiday"],
+ "12-28":["ကရင်နှစ်သစ်ကူး","Karen New Year"]};
+const MM_OBS_2027={"03-06":["အစားထိုးရုံးတက်ရက်","Substitute working day"],"05-29":["အစားထိုးရုံးတက်ရက်","Substitute working day"],"11-27":["အစားထိုးရုံးတက်ရက်","Substitute working day"]};
+const TH_FIXED={"01-01":"New Year's Day","04-06":"Chakri Day","04-13":"Songkran","04-14":"Songkran","04-15":"Songkran","05-04":"Coronation Day","06-03":"H.M. Queen's Birthday",
+ "07-28":"H.M. King's Birthday","08-12":"Queen Mother's Birthday","10-13":"King Bhumibol Memorial","10-23":"Chulalongkorn Day","12-05":"Father's Day","12-10":"Constitution Day","12-31":"New Year's Eve"};
+const TH_YEAR={2027:{"02-21":"Makha Bucha","02-22":"Substitution Day","05-20":"Visakha Bucha","07-19":"Asahna Bucha","07-20":"Buddhist Lent Day"}};
+
+// ================= engine helpers =================
+const pad=n=>String(n).padStart(2,'0');
+const key=(y,m,d)=>`${y}-${pad(m)}-${pad(d)}`;
+const dim=(y,m)=>new Date(y,m,0).getDate();
+function nthDow(y,m,dow,n){const f=new Date(y,m-1,1).getDay();let d=1+((dow-f+7)%7)+(n-1)*7;return d}
+function lastDow(y,m,dow){const L=dim(y,m);const l=new Date(y,m-1,L).getDay();return L-((l-dow+7)%7)}
+function usHolidays(y){const h={};const add=(m,d,n)=>h[`${pad(m)}-${pad(d)}`]=n;
+ add(1,1,"New Year's Day");add(1,nthDow(y,1,1,3),"Martin Luther King Jr. Day");add(2,nthDow(y,2,1,3),"Presidents' Day");add(5,lastDow(y,5,1),"Memorial Day");
+ add(6,19,"Juneteenth");add(7,4,"Independence Day");add(9,nthDow(y,9,1,1),"Labor Day");add(10,nthDow(y,10,1,2),"Columbus / Indigenous Peoples' Day");
+ add(11,11,"Veterans Day");add(11,nthDow(y,11,4,4),"Thanksgiving");add(12,25,"Christmas Day");return h}
+const usCache={};
+const cache=new Map();
+function info(y,m,d){
+ const k=key(y,m,d); if(cache.has(k))return cache.get(k);
+ const jdn=Math.round(ceDateTime.w2j(y,m,d));
+ const M=ceMmDateTime.j2m(jdn);
+ const mp=ceMmDateTime.cal_mp(M.md,M.mm,M.myt), mf=ceMmDateTime.cal_mf(M.md);
+ const wdS=(jdn+2)%7;           // engine: 0=Sat
+ const dow=(wdS+6)%7;           // 0=Sun
+ const md2=`${pad(m)}-${pad(d)}`;
+ let pub=[],obs=[];
+ if(y===2027){ if(MM_2027[md2])pub.push(MM_2027[md2]); if(MM_OBS_2027[md2])obs.push(MM_OBS_2027[md2]); }
+ else { for(const h of ceMmDateTime.cal_holiday(jdn)) pub.push([HOL_MM[h]||h,h]); }
+ const th=[]; if(TH_FIXED[md2])th.push(TH_FIXED[md2]); if(TH_YEAR[y]&&TH_YEAR[y][md2])th.push(TH_YEAR[y][md2]);
+ if(!usCache[y])usCache[y]=usHolidays(y); const us=usCache[y][md2]?[usCache[y][md2]]:[];
+ const mname=(M.mm===4&&M.myt>0)?'ဒုတိယဝါဆို':MM_MONTH[M.mm];
+ const mnameEn=(M.mm===4&&M.myt>0)?'Second Waso':MM_MONTH_EN[M.mm];
+ const r={y,m,d,jdn,dow,my:M.my,mm:M.mm,md:M.md,myt:M.myt,mp,mf,mname,mnameEn,
+   sab:ceMmDateTime.cal_sabbath(M.md,M.mm,M.myt),
+   yat:ceMmDateTime.cal_yatyaza(M.mm,wdS),pya:ceMmDateTime.cal_pyathada(M.mm,wdS),naga:ceMmDateTime.cal_nagahle(M.mm),
+   pub,obs,th,us};
+ cache.set(k,r); return r;
+}
+function lunarLine(i){ // e.g. သီတင်းကျွတ်လဆုတ် ၇ ရက်
+ if(i.mp===1||i.mp===3) return `${i.mname}${PHASE[i.mp]}`;
+ return `${i.mname}${PHASE[i.mp]} ${bn(i.mf)} ရက်`;
+}
+function lunarEn(i){ return i.mp===1||i.mp===3?`${i.mnameEn} ${PHASE_EN[i.mp]}`:`${i.mnameEn} ${PHASE_EN[i.mp]} ${i.mf}`; }
+function addDays(y,m,d,n){const t=new Date(y,m-1,d+n);return [t.getFullYear(),t.getMonth()+1,t.getDate()]}
+
+// ================= settings =================
+const DEF={mm:true,th:true,us:false,sab:true,astro:false,gcal:true,dim:true,wk:0};
+let S={...DEF};
+try{const s=JSON.parse(localStorage.getItem('bfc.settings')||'null');if(s)S={...DEF,...s}}catch(e){}
+function saveS(){try{localStorage.setItem('bfc.settings',JSON.stringify(S))}catch(e){}}
+
+// ================= state =================
+const now0=new Date();
+let view={y:now0.getFullYear(),m:now0.getMonth()+1};
+let yearView=now0.getFullYear();
+let EV={};      // family events: date -> [{id,title,time,who}]
+let GC={};      // google events: date -> [{title,time}]
+let gcState='off';
+const today=()=>{const t=new Date();return [t.getFullYear(),t.getMonth()+1,t.getDate()]};
+const isToday=(y,m,d)=>{const [a,b,c]=today();return a===y&&b===m&&c===d};
+
+// ================= ornaments =================
+const KANOTE=`<svg xmlns='http://www.w3.org/2000/svg' width='96' height='24' viewBox='0 0 96 24'><g fill='none' stroke='%23C9A227' stroke-width='1.6' stroke-linecap='round'><path d='M0 12 C12 12 16 3 26 4 C34 5 35 14 29 16 C24 18 21 13 24 10 C26 8 29 10 28 12'/><path d='M96 12 C84 12 80 21 70 20 C62 19 61 10 67 8 C72 6 75 11 72 14 C70 16 67 14 68 12'/><path d='M34 12 C40 12 44 12 48 7 C52 12 56 12 62 12'/></g><g fill='%23C9A227'><path d='M48 7 C45 11 45 15 48 18 C51 15 51 11 48 7Z'/><ellipse cx='40' cy='16' rx='3.2' ry='1.4' transform='rotate(-25 40 16)'/><ellipse cx='56' cy='16' rx='3.2' ry='1.4' transform='rotate(25 56 16)'/></g></svg>`;
+const KTILE=`<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='none' stroke='%23E9D9A6' stroke-width='1.4'><path d='M10 60 C20 30 50 30 55 50 C58 62 46 68 41 60 C37 54 44 49 48 53'/><path d='M110 60 C100 90 70 90 65 70 C62 58 74 52 79 60 C83 66 76 71 72 67'/><path d='M60 0 C60 20 60 30 60 40 M60 80 C60 90 60 100 60 120'/></g><g fill='%23E9D9A6'><path d='M60 40 C55 46 55 52 60 58 C65 52 65 46 60 40Z'/><path d='M60 62 C55 68 55 74 60 80 C65 74 65 68 60 62Z'/></g></svg>`;
+document.documentElement.style.setProperty('--kanote',`url("data:image/svg+xml,${KANOTE}")`);
+document.documentElement.style.setProperty('--kanote-tile',`url("data:image/svg+xml,${KTILE}") repeat`);
+
+function moonSVG(i){
+ // illumination 0..1 and side
+ let k,wax=true;
+ if(i.mp===1)k=1; else if(i.mp===3)k=0; else if(i.mp===0){k=Math.min(i.mf/15,1)} else {k=Math.max(1-i.mf/15,0);wax=false}
+ const r=34,c=37; const rx=Math.abs(1-2*k)*r;
+ const sweepOuter=wax?1:0; // lit side: right when waxing
+ const sweepInner=(k>0.5)?(wax?1:0):(wax?0:1);
+ let lit='';
+ if(k>=0.995) lit=`<circle cx="${c}" cy="${c}" r="${r}" fill="#f6ecd0"/>`;
+ else if(k>0.005) lit=`<path d="M${c} ${c-r} A${r} ${r} 0 0 ${sweepOuter} ${c} ${c+r} A${rx} ${r} 0 0 ${sweepInner} ${c} ${c-r}Z" fill="#f6ecd0"/>`;
+ return `<svg viewBox="0 0 74 74" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r}" fill="#2b2622" stroke="#4a4038"/>${lit}</svg>`;
+}
+
+// ================= render: month =================
+function weekdayOrder(){return S.wk==1?[1,2,3,4,5,6,0]:[0,1,2,3,4,5,6]}
+function headerLunar(y,m){
+ const a=info(y,m,1), b=info(y,m,dim(y,m));
+ const yr=a.my===b.my?`${bn(a.my)} ခုနှစ်`:`${bn(a.my)}-${bn(String(b.my).slice(-2))} ခု`;
+ const months=[]; for(let d=1;d<=dim(y,m);d++){const n=info(y,m,d).mname;if(!months.includes(n))months.push(n)}
+ const en=[]; for(let d=1;d<=dim(y,m);d++){const n=info(y,m,d).mnameEn;if(!en.includes(n))en.push(n)}
+ return {my:`${yr}၊ ${months.join('-')}`,en:`Myanmar Era ${a.my===b.my?a.my:a.my+'–'+b.my} · ${en.join(' – ')}`};
+}
+function phaseLabel(i,first){
+ if(i.mp===1||i.mp===3||i.mf===1||first) return `${i.mname}${PHASE[i.mp]}`;
+ return '';
+}
+function cellHTML(y,m,d,out){
+ const i=info(y,m,d);
+ const ph=S.mm&&i.pub.length;
+ const top=[];
+ if(ph) top.push(`<span class="hn-top">${esc(i.pub[0][0])}</span>`);
+ if(i.mp===1) top.push(`<span class="moon full" title="Full moon"></span>`);
+ if(i.mp===3) top.push(`<span class="moon new" title="New moon"></span>`);
+ top.push(`<span class="gd">${d}</span>`);
+ const low=[];
+ if(i.mp!==1&&i.mp!==3) low.push(`<span class="fd">${bn(i.mf)}</span>`);
+ const pl=phaseLabel(i,d===1); if(pl) low.push(`<span class="ph-lbl">${pl}</span>`);
+ if(S.mm) for(const o of i.obs) low.push(`<span class="tag obs my">${esc(o[0])}</span>`);
+ if(S.th) for(const t of i.th) low.push(`<span class="tag th">${esc(t)}</span>`);
+ if(S.us) for(const t of i.us) low.push(`<span class="tag us">${esc(t)}</span>`);
+ if(S.astro){ if(i.yat) low.push(`<span class="astro">ရက်ရာဇာ</span>`); if(i.pya) low.push(`<span class="astro bad">${i.pya===2?'မွန်းလွဲ':''}ပြဿဒါး</span>`); }
+ const k=key(y,m,d);
+ for(const e of (EV[k]||[]).slice(0,3)) low.push(`<span class="ev">${e.time?esc(e.time)+' ':''}${esc(e.title)}</span>`);
+ if(S.gcal) for(const e of (GC[k]||[]).slice(0,3)) low.push(`<span class="ev gc">${e.time?esc(e.time)+' ':''}${esc(e.title)}</span>`);
+ const sab=S.sab&&i.sab?`<span class="sab ${i.sab===2?'eve':''}" title="${i.sab===1?'Sabbath':'Sabbath eve'}"></span>`:'';
+ return `<div class="cell ${out?'out':''} ${ph?'ph':''} ${isToday(y,m,d)?'today':''}" data-k="${k}">${sab}<div class="top">${top.join('')}</div><div class="low">${low.join('')}</div></div>`;
+}
+function renderMonth(){
+ const {y,m}=view; const h=headerLunar(y,m);
+ const ord=weekdayOrder();
+ const first=new Date(y,m-1,1).getDay(); const lead=(first-ord[0]+7)%7;
+ const cells=[];
+ for(let n=0;n<lead;n++){const [a,b,c]=addDays(y,m,1,n-lead);cells.push(cellHTML(a,b,c,true))}
+ for(let d=1;d<=dim(y,m);d++)cells.push(cellHTML(y,m,d,false));
+ let t=0;while(cells.length%7){t++;const [a,b,c]=addDays(y,m,dim(y,m),t);cells.push(cellHTML(a,b,c,true))}
+ app.innerHTML=`<section class="month">
+  <div class="mhead"><div class="en"><h1>${GM_EN[m-1]} ${y}</h1><small>${GM_MM[m-1]} · Myanmar &amp; Thailand Calendar</small></div>
+   <div class="mnum">${m}</div><div class="mmy">${h.my}<small>${h.en}</small></div></div>
+  <div class="navrow"><button class="pill" data-nav="-1" aria-label="Previous month">‹ Prev</button><div class="kanote"></div><button class="pill" data-nav="0">Today</button><div class="kanote"></div><button class="pill" data-nav="1" aria-label="Next month">Next ›</button></div>
+  <div class="wdbar">${ord.map(w=>`<div class="${w===0||w===6?'we':''}"><b>${WD_EN[w]}</b><span>${WD_MM[w]}</span></div>`).join('')}</div>
+  <div class="grid">${cells.join('')}</div>
+  <div class="legend">
+   <span><i style="background:var(--red);border-radius:50%"></i>Full moon <span class="my">လပြည့်</span></span>
+   <span><i style="background:var(--black);border-radius:50%"></i>New moon <span class="my">လကွယ်</span></span>
+   ${S.mm?`<span><i style="background:var(--hol)"></i>Myanmar public holiday</span>`:''}
+   ${S.th?`<span><i style="background:var(--obs)"></i>Thai holiday</span>`:''}
+   ${S.us?`<span><i style="background:var(--us)"></i>US holiday</span>`:''}
+   ${S.sab?`<span><i style="border:2px solid var(--gold);border-radius:50%;background:#fff"></i>Sabbath <span class="my">ဥပုသ်</span></span>`:''}
+   <span><i style="background:#fbf6e7;border-left:3px solid var(--gold)"></i>Family event</span>
+   ${S.gcal?`<span><i style="background:#edf3fd;border-left:3px solid #4f7fd8"></i>Google Calendar</span>`:''}
+   <span>Small Burmese number = waxing/waning day</span>
+  </div>
+  <div class="gcnote" id="gcNote"></div>
+ </section>`;
+ app.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{const n=+b.dataset.nav;if(n===0){const t=today();view={y:t[0],m:t[1]}}else{const dt=new Date(view.y,view.m-1+n,1);view={y:dt.getFullYear(),m:dt.getMonth()+1}}render()});
+ app.querySelectorAll('.cell:not(.out)').forEach(c=>c.onclick=()=>openDay(c.dataset.k));
+ gcWatch(addDays(y,m,1,-lead), addDays(y,m,dim(y,m),t+1));
+ updGcNote();
+}
+
+// ================= render: wall =================
+let clockTimer=null;
+function renderWall(){
+ const [ty,tm,td]=today(); const i=info(ty,tm,td);
+ const ord=weekdayOrder(); const dow=new Date(ty,tm-1,td).getDay(); const back=(dow-ord[0]+7)%7;
+ const start=addDays(ty,tm,td,-back);
+ const cells=[];
+ for(let n=0;n<28;n++){
+  const [y,m,d]=addDays(start[0],start[1],start[2],n); const c=info(y,m,d); const k=key(y,m,d);
+  const ph=S.mm&&c.pub.length;
+  const parts=[];
+  let lunar='';
+  if(c.mp===1)lunar=`<span class="fm">${c.mname}လပြည့်</span>`; else if(c.mp===3)lunar=`<span class="nm">${c.mname}လကွယ်</span>`;
+  else lunar=`${PHASE[c.mp]} ${bn(c.mf)}`;
+  parts.push(`<div class="l">${lunar}</div>`);
+  if(S.mm) for(const p of c.pub) parts.push(`<div class="h">${esc(p[0])}</div>`);
+  if(S.th) for(const t of c.th) parts.push(`<div class="h th">${esc(t)}</div>`);
+  if(S.us) for(const t of c.us) parts.push(`<div class="h us">${esc(t)}</div>`);
+  for(const e of (EV[k]||[]).slice(0,3)) parts.push(`<div class="e">${e.time?esc(e.time)+' ':''}${esc(e.title)}</div>`);
+  if(S.gcal) for(const e of (GC[k]||[]).slice(0,3)) parts.push(`<div class="e gc">${e.time?esc(e.time)+' ':''}${esc(e.title)}</div>`);
+  const dot=c.mp===1?'<span class="wdot full"></span>':c.mp===3?'<span class="wdot new"></span>':'';
+  const lbl=(d===1||n===0)?`<span class="mn">${GM_EN[m-1].slice(0,3)}</span>`:'';
+  cells.push(`<div class="wc ${isToday(y,m,d)?'today':''} ${ph?'ph':''}" data-k="${k}"><div class="n">${lbl}<b>${d}</b>${dot}</div>${parts.join('')}</div>`);
+ }
+ // upcoming
+ const ups=[]; let nextFull=null,nextSab=null;
+ for(let n=1;n<=75&&ups.length<5;n++){
+  const [y,m,d]=addDays(ty,tm,td,n); const c=info(y,m,d);
+  if(!nextFull&&c.mp===1)nextFull=[n,c,y,m,d];
+  if(!nextSab&&c.sab===1)nextSab=[n,c,y,m,d];
+  const names=[]; if(S.mm)c.pub.forEach(p=>names.push(p[0])); if(S.th)c.th.forEach(t=>names.push(t)); if(S.us)c.us.forEach(t=>names.push(t));
+  if(names.length) ups.push(`<div class="up"><span class="d">${GM_EN[m-1].slice(0,3)} ${d}</span><span class="t">${esc(names.join(' · '))}</span></div>`);
+ }
+ const badges=[];
+ if(i.sab===1)badges.push(`<span class="badge">ဥပုသ်နေ့ · Sabbath</span>`);
+ if(i.sab===2)badges.push(`<span class="badge">အဖိတ်နေ့ · Sabbath eve</span>`);
+ if(S.mm)i.pub.forEach(p=>badges.push(`<span class="badge red">${esc(p[0])}</span>`));
+ if(S.th)i.th.forEach(t=>badges.push(`<span class="badge">${esc(t)}</span>`));
+ if(S.astro){if(i.yat)badges.push(`<span class="badge">ရက်ရာဇာ</span>`);if(i.pya)badges.push(`<span class="badge">ပြဿဒါး</span>`)}
+ const todayEv=[...(EV[key(ty,tm,td)]||[]).map(e=>({...e,gc:0})),...(S.gcal?(GC[key(ty,tm,td)]||[]).map(e=>({...e,gc:1})):[])];
+ const end=addDays(start[0],start[1],start[2],27);
+ app.innerHTML=`<section class="wall" id="wall">
+  <div class="wl">
+   <div class="clock" id="clk"></div>
+   <div class="gdate">${WD_EN_L[i.dow]}, ${GM_EN[tm-1]} ${td}, ${ty}</div>
+   <div class="mdate">${bn(i.my)} ခု ${lunarLine(i)}<small>${WD_MM[i.dow]}နေ့ · ${lunarEn(i)}, ME ${i.my}</small></div>
+   ${badges.length?`<div class="badges">${badges.join('')}</div>`:''}
+   <div class="moonrow">${moonSVG(i)}<div class="my">${nextFull?`လပြည့်: ${GM_MM[nextFull[3]-1]} ${bn(nextFull[4])} (${bn(nextFull[0])} ရက်အလို)`:''}<br>${nextSab?`နောက်ဥပုသ်: ${WD_MM[nextSab[1].dow]} ${GM_MM[nextSab[3]-1]} ${bn(nextSab[4])}`:''}<br><span style="font-size:13px;color:#b9ab8c">နဂါးခေါင်းလှည့်: ${DIR_MM[i.naga]} · Dragon head ${DIR_EN[i.naga]}</span></div></div>
+   <h3>Today · ယနေ့</h3>
+   <div class="uplist">${todayEv.length?todayEv.map(e=>`<div class="up"><span class="d">${esc(e.time||'All day')}</span><span class="t">${esc(e.title)}</span></div>`).join(''):'<div class="up"><span class="t" style="color:#9c917d">No family events · tap a day to add one</span></div>'}</div>
+   <h3>Coming up · လာမည့်ရက်များ</h3>
+   <div class="uplist">${ups.join('')||'<div class="up"><span class="t" style="color:#9c917d">No holidays in the next 10 weeks</span></div>'}</div>
+  </div>
+  <div class="wr">
+   <div class="wh"><b>${GM_EN[start[1]-1]} ${start[2]} – ${GM_EN[end[1]-1].slice(0,3)} ${end[2]}</b><span>${headerLunar(tm===12&&false?ty:ty,tm).my}</span></div>
+   <div class="wgrid">${ord.map(w=>`<div class="wd">${WD_EN[w]}<span>${WD_MM[w]}</span></div>`).join('')}${cells.join('')}</div>
+   <div class="wfoot"><span id="gcStat"></span><span>Tap any day for details · ရက်ကိုနှိပ်ပါ</span></div>
+  </div>
+ </section>`;
+ app.querySelectorAll('.wc').forEach(c=>c.onclick=()=>openDay(c.dataset.k));
+ tick(); clearInterval(clockTimer); clockTimer=setInterval(tick,1000);
+ gcWatch(start, addDays(end[0],end[1],end[2],1));
+ updGcNote();
+}
+let lastDay=key(...today());
+function tick(){
+ const el=document.getElementById('clk'); if(!el)return;
+ const t=new Date(); let h=t.getHours(); const ap=h>=12?'PM':'AM'; h=h%12||12;
+ el.innerHTML=`${h}:${pad(t.getMinutes())}<sup>${pad(t.getSeconds())}</sup>`;
+ const w=document.getElementById('wall'); if(w) w.classList.toggle('dim',!!S.dim&&(t.getHours()>=22||t.getHours()<6));
+ const k=key(...today()); if(k!==lastDay){lastDay=k;render()}
+}
+
+// ================= render: year =================
+function renderYear(){
+ const y=yearView; const a=info(y,1,1),b=info(y,12,31);
+ const ord=weekdayOrder();
+ let html=`<section class="year"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2>${y}</h2><div><button class="pill" data-yn="-1">‹ ${y-1}</button> <button class="pill" data-yn="1">${y+1} ›</button></div></div>
+  <div class="sub">မြန်မာသက္ကရာဇ် ${bn(a.my)}–${bn(b.my)} ခု</div><div class="ygrid">`;
+ for(let m=1;m<=12;m++){
+  const first=new Date(y,m-1,1).getDay(); const lead=(first-ord[0]+7)%7; const h=headerLunar(y,m);
+  let g=ord.map(w=>`<div class="w">${WD_EN[w][0]}</div>`).join('');
+  for(let n=0;n<lead;n++)g+='<div></div>';
+  for(let d=1;d<=dim(y,m);d++){const c=info(y,m,d);const cls=[c.mp===1?'fm':c.mp===3?'nm':'',S.mm&&c.pub.length&&c.mp!==1&&c.mp!==3?'ph':'',S.th&&c.th.length?'tht':'',isToday(y,m,d)?'td':''].join(' ');g+=`<div class="${cls}">${d}</div>`}
+  html+=`<div class="ym" data-m="${m}"><h4>${GM_EN[m-1]}<span>${h.my.split('၊ ')[1]}</span></h4><div class="ymg">${g}</div></div>`;
+ }
+ html+=`</div><div class="legend"><span><i style="background:var(--red);border-radius:50%"></i>Full moon</span><span><i style="background:var(--black);border-radius:50%"></i>New moon</span>${S.mm?'<span><i style="background:var(--hol)"></i>Myanmar holiday</span>':''}${S.th?'<span><i style="box-shadow:inset 0 -3px 0 #7fa8d8;background:#fff"></i>Thai holiday</span>':''}</div></section>`;
+ app.innerHTML=html;
+ app.querySelectorAll('[data-yn]').forEach(b=>b.onclick=()=>{yearView+=+b.dataset.yn;render()});
+ app.querySelectorAll('.ym').forEach(e=>e.onclick=()=>{view={y,m:+e.dataset.m};go('month')});
+}
+
+// ================= day dialog =================
+const dayDlg=document.getElementById('dayDlg');
+function openDay(k){
+ const [y,m,d]=k.split('-').map(Number); const i=info(y,m,d);
+ const hol=[];
+ if(S.mm)i.pub.forEach(p=>hol.push(`<div style="background:var(--hol)"><span class="my">${esc(p[0])}</span> · ${esc(p[1])}</div>`));
+ if(S.mm)i.obs.forEach(p=>hol.push(`<div style="background:#efe7d2"><span class="my">${esc(p[0])}</span> · ${esc(p[1])}</div>`));
+ if(S.th)i.th.forEach(t=>hol.push(`<div style="background:var(--obs)">🇹🇭 ${esc(t)}</div>`));
+ if(S.us)i.us.forEach(t=>hol.push(`<div style="background:var(--us)">🇺🇸 ${esc(t)}</div>`));
+ const evs=(EV[k]||[]).slice().sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+ const gcs=S.gcal?(GC[k]||[]):[];
+ dayDlg.innerHTML=`<div class="dh"><div class="big">${WD_EN_L[i.dow]}, ${GM_EN[m-1]} ${d}, ${y}</div><div class="my">${WD_MM[i.dow]}နေ့ · ${bn(i.my)} ခု ${lunarLine(i)}</div><button class="x" data-close aria-label="Close">✕</button></div>
+ <div class="db">
+  <dl class="kv">
+   <dt>Myanmar date</dt><dd>${lunarEn(i)}, ME ${i.my} · Sasana ${i.my+1182}</dd>
+   <dt>Moon</dt><dd><span class="my">${PHASE[i.mp]}</span> · ${PHASE_EN[i.mp]}${i.mp===0||i.mp===2?` day ${i.mf}`:''}</dd>
+   <dt>Sabbath</dt><dd>${i.sab===1?'<span class="my">ဥပုသ်နေ့</span> · Sabbath day':i.sab===2?'<span class="my">အဖိတ်နေ့</span> · Sabbath eve':'—'}</dd>
+   <dt>Astrology</dt><dd><span class="my">${[i.yat?'ရက်ရာဇာ':'',i.pya===1?'ပြဿဒါး':i.pya===2?'မွန်းလွဲပြဿဒါး':''].filter(Boolean).join(' · ')||'—'}</span>${i.yat||i.pya?` <span style="color:var(--muted);font-size:12.5px">(${[i.yat?'Yatyaza':'',i.pya===1?'Pyathada':i.pya===2?'Afternoon Pyathada':''].filter(Boolean).join(', ')})</span>`:''}</dd>
+   <dt>Dragon head</dt><dd><span class="my">${DIR_MM[i.naga]}</span> · ${DIR_EN[i.naga]}</dd>
+  </dl>
+  ${hol.length?`<div class="sec">Holidays</div><div class="hl">${hol.join('')}</div>`:''}
+  <div class="sec">Family events · မိသားစုအစီအစဉ်</div>
+  <div id="evList">${evs.map(e=>`<div class="evrow"><span class="tm">${esc(e.time||'All day')}</span><span>${esc(e.title)}</span>${e.who?`<span class="who">${esc(e.who)}</span>`:''}<button data-del="${esc(e.id)}">Remove</button></div>`).join('')||'<div class="note">Nothing yet.</div>'}</div>
+  ${gcs.length?`<div class="sec">Google Calendar</div>${gcs.map(e=>`<div class="evrow"><span class="tm">${esc(e.time||'All day')}</span><span>${esc(e.title)}</span></div>`).join('')}`:''}
+  <form class="add" id="addForm">
+   <input name="title" class="full" placeholder="Add event — e.g. Monastery visit, Soccer practice" required maxlength="80">
+   <input name="who" placeholder="Who (optional)" maxlength="24">
+   <input name="time" type="time" aria-label="Time">
+   <button class="btn full" type="submit">Add to ${GM_EN[m-1].slice(0,3)} ${d}</button>
+  </form>
+  <div class="note" id="evNote">${dbState==='ok'?'Saved to this calendar — everyone you share it with sees it.':'Saved on this device only.'}</div>
+ </div>`;
+ dayDlg.querySelector('#addForm').onsubmit=async ev=>{ev.preventDefault();const f=new FormData(ev.target);
+   const e={id:'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),date:k,title:String(f.get('title')).trim(),who:String(f.get('who')||'').trim(),time:String(f.get('time')||'')};
+   if(!e.title)return; await addEvent(e); openDay(k)};
+ dayDlg.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{await delEvent(k,b.dataset.del);openDay(k)});
+ if(!dayDlg.open)dayDlg.showModal();
+}
+document.addEventListener('click',e=>{if(e.target.matches('[data-close]'))e.target.closest('dialog').close()});
+[dayDlg,document.getElementById('setDlg')].forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+dayDlg.addEventListener('close',()=>render());
+
+// ================= events storage =================
+let db=null, dbState='local';
+function loadLocal(){try{EV=JSON.parse(localStorage.getItem('bfc.events')||'{}')||{}}catch(e){EV={}}}
+function saveLocal(){try{localStorage.setItem('bfc.events',JSON.stringify(EV))}catch(e){}}
+loadLocal();
+async function addEvent(e){
+ if(db&&dbState==='ok'){try{await db.collection('events').doc(e.id).set(e);return}catch(err){dbState='local';}}
+ (EV[e.date]=EV[e.date]||[]).push(e); saveLocal();
+}
+async function delEvent(k,id){
+ if(db&&dbState==='ok'){try{await db.collection('events').doc(id).delete();return}catch(err){}}
+ EV[k]=(EV[k]||[]).filter(x=>x.id!==id); saveLocal();
+}
+async function initDb(){
+ if(!window.claude||!claude.use)return;
+ try{ db=await claude.use('db'); }catch(e){db=null}
+ if(!db)return;
+ let got=false;
+ try{
+  db.collection('events').onSnapshot(snap=>{
+   got=true; dbState='ok'; const m={};
+   snap.docs.forEach(s=>{const v=s.data();if(v&&v.date&&v.title){(m[v.date]=m[v.date]||[]).push({id:s.id,date:v.date,title:String(v.title),who:String(v.who||''),time:String(v.time||'')})}});
+   // keep any device-only events too
+   loadLocalInto(m); EV=m; if(!dayDlg.open)render();
+  },err=>{dbState='local';});
+ }catch(e){dbState='local'}
+}
+function loadLocalInto(m){try{const l=JSON.parse(localStorage.getItem('bfc.events')||'{}')||{};for(const k in l)for(const e of l[k]){(m[k]=m[k]||[]).push(e)}}catch(e){}}
+
+// ================= Google Calendar (connector) =================
+let mcp=null, gcUnsub=null, gcRange='';
+const isoLocal=(y,m,d)=>`${y}-${pad(m)}-${pad(d)}T00:00:00`;
+function parseGc(payload){
+ const out={}; if(!payload||typeof payload!=='object')return out;
+ const list=payload.events||payload.items||(Array.isArray(payload)?payload:[]);
+ for(const e of list){ if(!e||!e.start)continue;
+  const s=e.start.dateTime||e.start.date; if(!s)continue;
+  const title=String(e.summary||'(busy)').slice(0,80);
+  if(e.start.dateTime){const t=new Date(s);const k=key(t.getFullYear(),t.getMonth()+1,t.getDate());let h=t.getHours();const mm=pad(t.getMinutes());const ap=h>=12?'p':'a';h=h%12||12;(out[k]=out[k]||[]).push({title,time:`${h}:${mm}${ap}`});}
+  else { const [y,m,d]=e.start.date.split('-').map(Number); let endD=e.end&&e.end.date?e.end.date:null; let n=0;
+    let cur=[y,m,d]; do{ (out[key(...cur)]=out[key(...cur)]||[]).push({title,time:''}); cur=addDays(cur[0],cur[1],cur[2],1); n++; }while(endD&&key(...cur)<endD&&n<31); }
+ }
+ return out;
+}
+function gcWatch(a,b){
+ if(!S.gcal||!mcp){return}
+ const input={startTime:isoLocal(...a),endTime:isoLocal(...b),orderBy:'startTime',pageSize:250};
+ const sig=JSON.stringify(input); if(sig===gcRange)return; gcRange=sig;
+ if(gcUnsub){try{gcUnsub()}catch(e){}}
+ gcUnsub=mcp.watchTool('Google Calendar','list_events',input,ev=>{
+  if(ev.type==='data'){ GC=parseGc(ev.result&&ev.result.payload); gcState='ok'; if(!dayDlg.open)render(); }
+  else { const c=ev.error&&ev.error.code;
+   if(['needs_reauth','server_not_connected','blocked_by_policy','approval_required','not_in_manifest','selection_required','not_granted','capability_disabled','capability_removed'].includes(c)){GC={};gcState=c;gcRange='';if(!dayDlg.open)render();}
+   else {gcState='stale';updGcNote()} }
+ },{cache:{staleTime:120000,gcTime:86400000},refetchInterval:900000});
+}
+function updGcNote(){
+ const n=document.getElementById('gcNote'), s=document.getElementById('gcStat');
+ let msg='';
+ if(S.gcal&&mcp){
+  if(gcState==='approval_required'||gcState==='not_in_manifest') msg=`Google Calendar needs your OK to show events here. <button class="btn" id="gcAsk" style="margin-left:8px;padding:5px 10px">Connect Google Calendar</button>`;
+  else if(gcState==='needs_reauth') msg='Reconnect Google Calendar in claude.ai Settings → Connectors to show your events.';
+  else if(gcState==='server_not_connected') msg='Add the Google Calendar connector in claude.ai Settings → Connectors to show your events here.';
+  else if(gcState==='selection_required') msg='Choose which Google Calendar connector to use when claude.ai asks.';
+  else if(gcState==='stale') msg='Google Calendar is briefly unreachable — showing the last events loaded.';
+ }
+ if(n){n.innerHTML=msg;n.classList.toggle('show',!!msg);const b=document.getElementById('gcAsk');if(b)b.onclick=gcAsk}
+ if(s){s.textContent=S.gcal&&gcState==='ok'?'Google Calendar connected':(S.gcal&&msg?'Google Calendar: see Month view':'');}
+}
+async function gcAsk(){
+ if(!mcp)return; try{const p=JSON.parse(gcRange||'{}');const r=await mcp.callTool('Google Calendar','list_events',p);GC=parseGc(r&&r.payload);gcState='ok';render()}
+ catch(e){gcState=(e&&e.code)||'stale';updGcNote()}
+}
+async function initMcp(){
+ if(!window.claude||!claude.use)return;
+ try{mcp=await claude.use('mcp')}catch(e){mcp=null}
+ if(mcp){gcRange='';render()}
+}
+
+// ================= routing & chrome =================
+const app=document.getElementById('app');
+const VIEWS=['wall','month','year'];
+let cur='wall';
+function go(v){cur=v;try{if(location.hash!=='#'+v)history.replaceState(null,'','#'+v)}catch(e){location.hash=v}render()}
+function render(){
+ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===cur));
+ if(cur!=='wall'){clearInterval(clockTimer)}
+ if(cur==='wall')renderWall(); else if(cur==='year')renderYear(); else renderMonth();
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(VIEWS.includes(h)&&h!==cur){cur=h;render()}});
+document.getElementById('fsBtn').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch(e){}};
+const setDlg=document.getElementById('setDlg');
+document.getElementById('setBtn').onclick=()=>{setDlg.querySelectorAll('[data-s]').forEach(el=>{const k=el.dataset.s;if(el.type==='checkbox')el.checked=!!S[k];else el.value=String(S[k])});setDlg.showModal()};
+setDlg.querySelectorAll('[data-s]').forEach(el=>el.onchange=()=>{const k=el.dataset.s;S[k]=el.type==='checkbox'?el.checked:+el.value;saveS();gcRange='';if(k==='gcal'&&!S.gcal&&gcUnsub){try{gcUnsub()}catch(e){}gcUnsub=null;GC={}}render()});
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+const h0=location.hash.slice(1); if(VIEWS.includes(h0))cur=h0;
+render();
+initDb(); initMcp();
+</script>
+</body>
+</html>

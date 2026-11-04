@@ -1,0 +1,14 @@
+{
+  "name": "burmese-family-calendar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Burmese-first family wall calendar: Myanmar lunar dates, moon phases, Sabbath days, Myanmar & Thai holidays.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/noto-sans-myanmar": "5.3.0"
+  }
+}
