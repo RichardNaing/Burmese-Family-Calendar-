@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Burmese Calendar · ပြက္ခဒိန်</title>
+<style>/*FONTS*/</style>
+<style>
+:root{
+  --paper:#eceae6; --ink:#141413; --soft:#8b8983; --mark:#f2c81a;
+  --red:#b02a1f; --blue:#2f5f9e;
+  --mono:"Martian Mono Variable",ui-monospace,monospace;
+  --mm:"Noto Sans Myanmar","Pyidaungsu","Padauk","Myanmar Text","Myanmar Sangam MN",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background:#d8d5cf;
+  background-image:radial-gradient(120% 80% at 30% 0%,#e3e0da 0%,#cfccc5 100%);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:max(16px,env(safe-area-inset-top)) 12px 24px;
+  font-family:var(--mono);color:var(--ink);
+}
+.stage{width:min(540px,100%);}
+.scaler{width:540px;transform-origin:0 0}
+
+/* ---------- the board ---------- */
+.bb{
+  position:relative;width:540px;
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(135deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,0) 45%,rgba(60,52,40,.07) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.18  0 0 0 0 0.15  0 0 0 0.9 -0.36'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  color:var(--ink);
+  font-family:var(--mono);font-stretch:87.5%;
+  user-select:none;-webkit-user-select:none;
+  overflow:hidden;
+  box-shadow:0 1px 1px rgba(40,34,26,.12),0 12px 32px -10px rgba(40,34,26,.35),0 40px 80px -40px rgba(40,34,26,.4);
+}
+.bb-head{position:absolute;left:32px;right:32px;top:30px;height:110px}
+.bb-caption{margin:0;position:absolute;left:0;bottom:0;display:flex;align-items:flex-end;gap:16px}
+.bb-date{display:block;min-width:68px;margin-left:-5px;font-size:106px;line-height:78px;font-weight:300;font-stretch:75%;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.bb-cap2{display:flex;flex-direction:column;gap:2px;padding-bottom:1px}
+.bb-weekday{font-size:22px;line-height:24px;font-weight:400;letter-spacing:-.02em}
+.bb-lunar{font-family:var(--mm);font-size:14px;line-height:1.7;color:var(--ink);letter-spacing:0}
+.bb-lunar small{color:var(--soft);font-size:12.5px}
+.bb-month{position:absolute;right:0;bottom:27px;text-align:right}
+.bb-month h2{margin:0;font-size:22px;line-height:24px;font-weight:400;letter-spacing:-.02em;color:var(--soft)}
+.bb-mmy{position:absolute;left:0;top:2px;font-family:var(--mm);font-size:12.5px;line-height:1.7;color:var(--soft)}
+.bb-nav{position:absolute;right:0;top:0;display:flex;gap:6px}
+.bb-nav button{
+  font:inherit;font-size:11px;font-weight:500;font-stretch:100%;letter-spacing:.04em;
+  height:26px;min-width:26px;padding:0 8px;border:0;border-radius:13px;color:var(--ink);cursor:pointer;
+  background:linear-gradient(135deg,#f6f5f2,#e2dfd9);
+  box-shadow:-.75px -.75px .5px rgba(255,255,255,.9),1px 1px 2px rgba(52,46,36,.25),inset 0 0 0 .5px rgba(20,20,19,.08);
+  transition:transform .12s cubic-bezier(.2,.8,.2,1),box-shadow .12s;
+}
+.bb-nav button:active{transform:translateY(1px);box-shadow:inset 1px 1px 2px rgba(52,46,36,.3),inset -1px -1px 1px rgba(255,255,255,.9)}
+.bb-nav button:focus-visible{outline:1.5px solid var(--ink);outline-offset:2px}
+
+.bb-grid{position:absolute;left:32px;top:156px;width:476px;border-collapse:collapse;table-layout:fixed}
+.bb-grid th,.bb-grid td{padding:0}
+.bb-wd{height:24px;vertical-align:top;text-align:left;font-size:9.5px;line-height:12px;font-weight:500;font-stretch:100%;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.bb-wd span{display:block;font-family:var(--mm);font-size:9px;letter-spacing:0;text-transform:none;line-height:1.4;margin-top:1px}
+.bb-grid tbody td{position:relative;width:68px;height:68px;border-top:1px solid rgba(20,20,19,.2)}
+.bb-grid tbody tr:last-child td{border-bottom:1px solid rgba(20,20,19,.2)}
+.bb-day{position:absolute;inset:0;display:block;width:100%;height:100%;padding:0;margin:0;border:0;background:none;cursor:pointer;outline:none;color:inherit;font:inherit;text-align:left}
+.bb-top{position:absolute;left:-2px;top:5px;display:flex;align-items:center;gap:4px}
+.bb-num{display:block;min-width:15px;height:14px;padding:0 2px;font-size:11px;line-height:14px;font-weight:500;font-stretch:100%;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.bb-day[aria-selected="true"] .bb-num{background:var(--mark);font-weight:700}
+.bb-day.hol .bb-num{color:var(--red)}
+.bb-day[aria-selected="true"].hol .bb-num{color:var(--ink)}
+.bb-day.today .bb-num{box-shadow:inset 0 -1.5px 0 var(--ink)}
+.bb-fd{font-family:var(--mm);font-size:10px;line-height:14px;color:var(--soft)}
+.bb-moon{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:1px}
+.bb-moon.full{background:var(--red);box-shadow:0 0 0 2px rgba(176,42,31,.14)}
+.bb-moon.new{background:var(--ink)}
+.bb-sab{display:inline-block;width:5px;height:5px;border-radius:50%;background:#b08d1a}
+.bb-th{display:inline-block;width:6px;height:6px;border-radius:1px;background:var(--blue);opacity:.75}
+.bb-day:focus-visible .bb-dimple{outline:1.5px solid var(--ink);outline-offset:2px}
+.bb-dimple{
+  position:absolute;left:13px;top:19px;width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,#c9c6bf 8%,#dedbd5 34%,#efede9 60%,#fdfdfc 92%);
+  box-shadow:inset 1.5px 1.5px 2px rgba(52,46,36,.3),inset -1px -1px 1.5px rgba(255,255,255,.95),-.75px -.75px .5px rgba(255,255,255,.8),.75px .75px .75px rgba(52,46,36,.12);
+}
+.bb-day.full .bb-dimple{background:linear-gradient(135deg,#cfc7b6 8%,#e6dfcf 34%,#f4efe3 60%,#fffdf6 92%)}
+
+.bb-foot{position:absolute;left:32px;right:32px}
+.bb-info{padding-top:14px;min-height:112px}
+.bb-info .my{font-family:var(--mm);font-size:15px;line-height:1.7}
+.bb-info .en{font-size:10.5px;line-height:15px;font-weight:400;font-stretch:100%;letter-spacing:.02em;color:var(--soft);margin-top:2px}
+.bb-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.bb-tag{font-size:10px;line-height:14px;font-weight:500;font-stretch:100%;letter-spacing:.04em;padding:4px 8px;border-radius:11px;
+  background:linear-gradient(135deg,#f6f5f2,#e5e2dc);box-shadow:-.5px -.5px .5px rgba(255,255,255,.9),.75px .75px 1.5px rgba(52,46,36,.22)}
+.bb-tag .my{font-size:11.5px;line-height:1.4}
+.bb-tag.red{color:var(--red)} .bb-tag.blue{color:var(--blue)} .bb-tag.gold{color:#7a5f0c}
+.bb-legend{margin-top:16px;display:flex;flex-wrap:wrap;gap:12px;font-size:9px;line-height:12px;font-weight:500;font-stretch:100%;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.bb-legend i{display:inline-block;vertical-align:-1px;margin-right:5px}
+
+.bb-ball,.bb-grab,.bb-shadow,.bb-contact{position:absolute;left:0;top:0;will-change:transform}
+.bb-ball{width:44px;height:44px;margin:-22px 0 0 -22px;pointer-events:none}
+.bb-grab{width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;cursor:grab;touch-action:none}
+.bb-grab[data-held]{cursor:grabbing}
+.bb-shadow{width:35px;height:35px;margin:-17.5px 0 0 -17.5px;border-radius:50%;background:#2a2520;pointer-events:none}
+.bb-contact{width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:radial-gradient(closest-side,rgba(30,26,20,.7) 70%,rgba(30,26,20,.26) 84%,rgba(30,26,20,0) 100%);pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.hint{margin:12px 2px 0;font-size:10px;line-height:15px;font-stretch:100%;letter-spacing:.03em;color:#6f6c66;text-align:center}
+.hint .my{font-family:var(--mm);font-size:11px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+ <div class="scaler" id="scaler">
+  <div class="bb" id="bb">
+   <div class="bb-head">
+    <div class="bb-nav">
+     <button type="button" id="prev" aria-label="Previous month">‹</button>
+     <button type="button" id="todayBtn">Today</button>
+     <button type="button" id="next" aria-label="Next month">›</button>
+    </div>
+    <p class="bb-caption" aria-live="polite">
+     <span class="bb-date" id="capDate"></span>
+     <span class="bb-cap2"><span class="bb-weekday" id="capWd"></span><span class="bb-lunar" id="capLunar"></span></span>
+    </p>
+    <span class="bb-mmy" id="monthMy"></span><div class="bb-month"><h2 id="monthTitle"></h2></div>
+   </div>
+   <table class="bb-grid" role="grid" id="grid" aria-labelledby="monthTitle"></table>
+   <div class="bb-foot" id="foot"><section class="bb-info" id="info" aria-live="polite"></section>
+   <div class="bb-legend" aria-hidden="true">
+    <span><i class="bb-moon full" style="position:static;display:inline-block"></i>Full moon</span>
+    <span><i class="bb-moon new" style="position:static;display:inline-block"></i>New moon</span>
+    <span><i style="width:9px;height:9px;background:var(--red);border-radius:2px"></i>MM holiday</span>
+    <span><i style="width:6px;height:6px;background:var(--blue);border-radius:1px;opacity:.75"></i>Thai holiday</span>
+    <span><i style="width:5px;height:5px;background:#b08d1a;border-radius:50%"></i>Sabbath</span>
+   </div></div>
+   <i class="bb-shadow" aria-hidden="true"></i>
+   <i class="bb-contact" aria-hidden="true"></i>
+   <canvas class="bb-ball" width="176" height="176" aria-hidden="true"></canvas>
+   <i class="bb-grab" aria-hidden="true"></i>
+  </div>
+ </div>
+ <p class="hint">Drag or flick the ball into a day · click a day · arrow keys + Enter<br><span class="my">ဘောလုံးကို ရက်တစ်ရက်ထဲ ဆွဲချပါ</span></p>
+</div>
+
+<script>
+/*ENGINE*/
+</script>
+<script>
+"use strict";
+/*SHARED*/
+function headerLunar(y,m){
+ const a=info(y,m,1),b=info(y,m,dim(y,m));
+ const yr=a.my===b.my?`${bn(a.my)} ခုနှစ်`:`${bn(a.my)}-${bn(String(b.my).slice(-2))} ခု`;
+ const months=[];for(let d=1;d<=dim(y,m);d++){const n=info(y,m,d).mname;if(!months.includes(n))months.push(n)}
+ return{my:`${yr}၊ ${months.join('-')}`};
+}
+
+// ================= physics constants (from the design spec) =================
+const R=18,RD=21,DEPTH=3.2,G=7850,BOUNCE=0.58,KEEP=0.72,DEAD=95,WALL=0.5,CARRY=104,ROLL=5/7;
+const WELL=(ROLL*G*2*DEPTH)/(RD*RD),WELL_DRAG=9,DRAIN=700,RESIST=420,DRAG=1.2,V_MAX=3200;
+const U_EDGE=0.5*WELL*RD*RD,CAM=440,SHADE=0.66,BOX=44,K=4,LIFT=Math.ceil((R*CAM)/(CAM-CARRY));
+const clamp=(v,lo,hi)=>v<lo?lo:v>hi?hi:v;
+const norm=v=>{const l=Math.hypot(v[0],v[1],v[2])||1;return[v[0]/l,v[1]/l,v[2]/l]};
+const LIGHT=norm([-0.5,-0.5,0.76]);
+const SEAM_N=norm([0.75,-0.6,0.28]),SEAM_A=norm([0.6,0.75,0]);
+const SEAM_B=[SEAM_N[1]*SEAM_A[2]-SEAM_N[2]*SEAM_A[1],SEAM_N[2]*SEAM_A[0]-SEAM_N[0]*SEAM_A[2],SEAM_N[0]*SEAM_A[1]-SEAM_N[1]*SEAM_A[0]];
+const DOT_C=norm([-0.46,0.3,0.83]),DOT_T=norm([0.5,0.83,0.02]);
+const DOTS=[1,-1].map(s=>norm([DOT_C[0]+0.21*s*DOT_T[0],DOT_C[1]+0.21*s*DOT_T[1],DOT_C[2]+0.21*s*DOT_T[2]]));
+const DOT_R=0.125;
+const wrapLight=(x,y,z)=>clamp((x*LIGHT[0]+y*LIGHT[1]+z*LIGHT[2]+0.28)/1.28,0,1);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+
+function makeSphere(){
+ const s=BOX*K,c=document.createElement('canvas');c.width=c.height=s;
+ const ctx=c.getContext('2d'),img=ctx.createImageData(s,s),rp=R*K;
+ for(let py=0;py<s;py++)for(let px=0;px<s;px++){
+  const u=(px+.5-s/2)/rp,v=(py+.5-s/2)/rp,rr=Math.hypot(u,v),a=clamp((1-rr)*rp+.5,0,1);
+  if(a<=0)continue;
+  const k=rr>1?1/rr:1,nx=u*k,ny=v*k,nz=Math.sqrt(Math.max(0,1-nx*nx-ny*ny));
+  const w=wrapLight(nx,ny,nz),hz=LIGHT[2]+1,hl=Math.hypot(LIGHT[0],LIGHT[1],hz);
+  const sheen=Math.pow(Math.max(0,(nx*LIGHT[0]+ny*LIGHT[1]+nz*hz)/hl),9),rim=Math.pow(1-nz,3);
+  const grain=(((px*73856093)^(py*19349663))>>>0)%7-3;
+  const i=13+52*Math.pow(w,1.35)+20*sheen+20*rim+grain*.5,o=(py*s+px)*4;
+  img.data[o]=i;img.data[o+1]=i;img.data[o+2]=i*1.03+1;img.data[o+3]=a*255;
+ }
+ ctx.putImageData(img,0,0);return c;
+}
+
+// ================= state =================
+const bb=document.getElementById('bb'),gridEl=document.getElementById('grid');
+const [ty,tm,td]=(()=>{const t=new Date();return[t.getFullYear(),t.getMonth()+1,t.getDate()]})();
+let month={y:ty,m:tm};
+let value=key(ty,tm,td);
+let focusKey=value;
+const st={x:0,y:0,z:0,vx:0,vy:0,vz:0,air:false,held:false,rest:true,hx:0,hy:0,m:[1,0,0,0,1,0,0,0,1],wx:0,wy:0,auto:-1,autoT:0,caught:0,at:-1,cells:[]};
+let FW=540,FH=760,scale=1,footTop=600;
+function sizeBoard(){FH=Math.round(footTop+document.getElementById('foot').offsetHeight+22);bb.style.height=FH+'px';fit()}
+
+// ================= rendering =================
+function monthSpan(y,m){const h=headerLunar(y,m);return h.my}
+function renderGrid(){
+ const {y,m}=month;const lead=new Date(y,m-1,1).getDay();const n=dim(y,m);
+ const rows=Math.ceil((lead+n)/7);
+ let h='<thead><tr>'+WD_EN.map((w,i)=>`<th class="bb-wd" scope="col" abbr="${WD_EN_L[i]}">${w}<span>${WD_MM[i]}</span></th>`).join('')+'</tr></thead><tbody>';
+ let d=1-lead;
+ for(let r=0;r<rows;r++){h+='<tr>';for(let c=0;c<7;c++,d++){
+  if(d<1||d>n){h+='<td role="gridcell" aria-hidden="true"></td>';continue}
+  const i=info(y,m,d),k=key(y,m,d);
+  const hol=i.pub.length>0,th=i.th.length>0;
+  const marks=[];
+  const lunarMark=i.mp===1?'<i class="bb-moon full" aria-hidden="true"></i>':i.mp===3?'<i class="bb-moon new" aria-hidden="true"></i>':`<span class="bb-fd" aria-hidden="true">${bn(i.mf)}</span>`;
+  if(i.sab===1)marks.push('<i class="bb-sab" aria-hidden="true"></i>');
+  if(th)marks.push('<i class="bb-th" aria-hidden="true"></i>');
+  const label=[`${WD_EN_L[i.dow]}, ${GM_EN[m-1]} ${d}`,lunarEn(i),i.sab===1?'Sabbath':'',...i.pub.map(p=>p[1]),...i.th].filter(Boolean).join('. ');
+  h+=`<td role="gridcell"><button type="button" class="bb-day${hol?' hol':''}${i.mp===1?' full':''}${k===key(ty,tm,td)?' today':''}" data-value="${k}" aria-selected="${k===value}" tabindex="${k===focusKey?0:-1}" aria-label="${esc(label)}"${k===key(ty,tm,td)?' aria-current="date"':''}><span class="bb-top"><span class="bb-num">${d}</span>${lunarMark}${marks.join('')}</span><i class="bb-dimple" aria-hidden="true"></i></button></td>`;
+ }h+='</tr>'}
+ gridEl.innerHTML=h+'</tbody>';
+ document.getElementById('monthTitle').textContent=`${GM_EN[m-1]} ${y}`;
+ document.getElementById('monthMy').textContent=monthSpan(y,m);
+ // layout: info panel below the grid, board height follows the row count
+ const gridBottom=156+24+rows*68;
+ document.getElementById('foot').style.top=(gridBottom+4)+'px';footTop=gridBottom+4;
+}
+function renderCaption(){
+ const [y,m,d]=value.split('-').map(Number),i=info(y,m,d);
+ document.getElementById('capDate').textContent=d;
+ document.getElementById('capWd').textContent=WD_EN_L[i.dow];
+ document.getElementById('capLunar').innerHTML=`${lunarLine(i)} <small>${bn(i.my)} ခု</small>`;
+ const tags=[];
+ tags.push(`<span class="bb-tag"><span class="my">${PHASE[i.mp]}</span> · ${PHASE_EN[i.mp]}${i.mp===0||i.mp===2?' '+i.mf:''}</span>`);
+ if(i.sab===1)tags.push('<span class="bb-tag gold"><span class="my">ဥပုသ်နေ့</span> · Sabbath</span>');
+ if(i.sab===2)tags.push('<span class="bb-tag gold"><span class="my">အဖိတ်နေ့</span> · Sabbath eve</span>');
+ i.pub.forEach(p=>tags.push(`<span class="bb-tag red"><span class="my">${esc(p[0])}</span> · ${esc(p[1])}</span>`));
+ i.obs.forEach(p=>tags.push(`<span class="bb-tag"><span class="my">${esc(p[0])}</span></span>`));
+ i.th.forEach(t=>tags.push(`<span class="bb-tag blue">TH · ${esc(t)}</span>`));
+ if(i.yat)tags.push('<span class="bb-tag"><span class="my">ရက်ရာဇာ</span> · Yatyaza</span>');
+ if(i.pya)tags.push(`<span class="bb-tag"><span class="my">${i.pya===2?'မွန်းလွဲ':''}ပြဿဒါး</span> · Pyathada</span>`);
+ document.getElementById('info').innerHTML=`<div class="my">${WD_MM[i.dow]}နေ့ · ${bn(i.my)} ခု ${lunarLine(i)}</div>
+  <div class="en">${GM_EN[m-1].toUpperCase()} ${d}, ${y} · ${lunarEn(i).toUpperCase()} · ME ${i.my} · SASANA ${i.my+1182} · DRAGON HEAD ${DIR_EN[i.naga].toUpperCase()}</div>
+  <div class="bb-tags">${tags.join('')}</div>`;
+ gridEl.querySelectorAll('.bb-day').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.value===value)));
+ sizeBoard();
+}
+function setValue(k){if(k===value)return;value=k;focusKey=k;gridEl.querySelectorAll('.bb-day').forEach(b=>b.tabIndex=b.dataset.value===k?0:-1);renderCaption()}
+
+// ================= scale to fit =================
+function fit(){
+ const w=document.getElementById('stage').clientWidth;scale=Math.min(1,w/540);
+ const sc=document.getElementById('scaler');sc.style.transform=`scale(${scale})`;sc.style.marginBottom=(FH*scale-FH)+'px';
+}
+addEventListener('resize',()=>{fit();measure()});
+
+// ================= physics =================
+function measure(){
+ const box=bb.getBoundingClientRect();
+ st.cells=[...gridEl.querySelectorAll('.bb-day[data-value]')].map(d=>{
+  const r=d.querySelector('.bb-dimple').getBoundingClientRect(),c=d.getBoundingClientRect();
+  return{date:d.dataset.value,x:(r.left+r.width/2-box.left)/scale,y:(r.top+r.height/2-box.top)/scale,l:(c.left-box.left)/scale,t:(c.top-box.top)/scale,r:(c.right-box.left)/scale,b:(c.bottom-box.top)/scale};
+ });
+ FW=540;
+}
+function home(drop){
+ const i=Math.max(0,st.cells.findIndex(c=>c.date===value));
+ st.x=st.cells[i].x;st.y=st.cells[i].y;st.vx=st.vy=st.vz=st.wx=st.wy=0;st.held=false;st.at=i;st.auto=-1;
+ if(drop&&!reduce.matches){st.z=CARRY*1.2;st.air=true;st.rest=false}else{st.z=0;st.air=false;st.rest=true}
+}
+const nearest=(x,y)=>{let index=0,best=Infinity;for(let i=0;i<st.cells.length;i++){const d=(st.cells[i].x-x)**2+(st.cells[i].y-y)**2;if(d<best){best=d;index=i}}return{index,dx:st.cells[index].x-x,dy:st.cells[index].y-y,d:Math.sqrt(best)}};
+function turn(ax,ay){const a=Math.hypot(ax,ay);if(a<1e-7)return;const ux=ax/a,uy=ay/a,c=Math.cos(a),s=Math.sin(a),t=1-c;
+ const r=[t*ux*ux+c,t*ux*uy,s*uy,t*ux*uy,t*uy*uy+c,-s*ux,-s*uy,s*ux,c],m=st.m,o=new Array(9);
+ for(let i=0;i<3;i++)for(let j=0;j<3;j++)o[i*3+j]=r[i*3]*m[j]+r[i*3+1]*m[3+j]+r[i*3+2]*m[6+j];st.m=o}
+function step(h){
+ if(st.rest)return;
+ if(st.held){
+  st.vx+=(6400*(st.hx-st.x)-160*st.vx)*h;st.vy+=(6400*(st.hy-st.y)-160*st.vy)*h;st.vz+=(620*(CARRY-st.z)-50*st.vz)*h;
+  st.x+=st.vx*h;st.y+=st.vy*h;st.z=Math.max(0,st.z+st.vz*h);const f=Math.exp(-14*h);st.wx*=f;st.wy*=f;
+ }else if(st.air){
+  st.vz-=G*h;st.x+=st.vx*h;st.y+=st.vy*h;st.z+=st.vz*h;
+  if(st.z<=0){st.z=0;const up=-st.vz*BOUNCE;st.vx*=KEEP;st.vy*=KEEP;
+   if(up>DEAD)st.vz=up;else{st.vz=0;st.air=false}
+   st.wx=-st.vy/R;st.wy=st.vx/R;
+   const i=st.cells.findIndex(c=>st.x>=c.l&&st.x<c.r&&st.y>=c.t&&st.y<c.b);
+   if(i>=0&&i!==st.at&&st.auto<0){st.at=i;setValue(st.cells[i].date)}}
+ }else{
+  const n=nearest(st.x,st.y);let ax=0,ay=0,drag=DRAG,flat=true;
+  const target=st.auto>=0?st.cells[st.auto]:null,tdst=target?Math.hypot(target.x-st.x,target.y-st.y):0;
+  if(target&&tdst>RD*.85){const want=Math.min(540,Math.sqrt(2*720*tdst));ax=13*((want*(target.x-st.x))/tdst-st.vx);ay=13*((want*(target.y-st.y))/tdst-st.vy);
+   const a=Math.hypot(ax,ay);if(a>3400){ax*=3400/a;ay*=3400/a}drag=0;flat=false;st.autoT+=h;if(st.autoT>2.5)st.auto=-1;}
+  else if(n.d<RD){ax=WELL*n.dx;ay=WELL*n.dy;drag=target?13:WELL_DRAG;flat=false}
+  else{ax=(DRAIN*n.dx)/n.d;ay=(DRAIN*n.dy)/n.d}
+  const sp=Math.hypot(st.vx,st.vy);
+  if(flat&&sp>1){ax-=(RESIST*st.vx)/sp;ay-=(RESIST*st.vy)/sp}
+  st.vx+=(ax-drag*st.vx)*h;st.vy+=(ay-drag*st.vy)*h;st.x+=st.vx*h;st.y+=st.vy*h;st.wx=-st.vy/R;st.wy=st.vx/R;
+  const e=.5*(st.vx*st.vx+st.vy*st.vy)+.5*WELL*n.d*n.d;
+  if(n.d<RD&&e<.45*U_EDGE){st.caught+=h;
+   if(st.caught>.06){if(st.auto===n.index)st.auto=-1;
+    if(st.at!==n.index&&st.auto<0){st.at=n.index;setValue(st.cells[n.index].date)}
+    if(st.auto<0&&n.d<.35&&sp<3){st.x=st.cells[n.index].x;st.y=st.cells[n.index].y;st.vx=st.vy=st.wx=st.wy=0;st.rest=true}}}
+  else st.caught=0;
+ }
+ if(st.x<R){st.x=R;st.vx=st.held?0:Math.abs(st.vx)*WALL}else if(st.x>FW-R){st.x=FW-R;st.vx=st.held?0:-Math.abs(st.vx)*WALL}
+ if(st.y<R){st.y=R;st.vy=st.held?0:Math.abs(st.vy)*WALL}else if(st.y>FH-R){st.y=FH-R;st.vy=st.held?0:-Math.abs(st.vy)*WALL}
+ const sp=Math.hypot(st.vx,st.vy);if(sp>V_MAX){st.vx*=V_MAX/sp;st.vy*=V_MAX/sp}
+ st.vz=clamp(st.vz,-4000,4000);st.z=clamp(st.z,0,400);turn(st.wx*h,st.wy*h);
+ if(![st.x,st.y,st.z,st.vx,st.vy,st.vz,...st.m].every(Number.isFinite)){st.m=[1,0,0,0,1,0,0,0,1];home(false)}
+}
+const ballEl=bb.querySelector('.bb-ball'),grabEl=bb.querySelector('.bb-grab'),shadowEl=bb.querySelector('.bb-shadow'),contactEl=bb.querySelector('.bb-contact');
+const ctx=ballEl.getContext('2d');const sphere=makeSphere();
+const body=v=>{const m=st.m;return[m[0]*v[0]+m[1]*v[1]+m[2]*v[2],m[3]*v[0]+m[4]*v[1]+m[5]*v[2],m[6]*v[0]+m[7]*v[1]+m[8]*v[2]]};
+let drawn='';
+function paint(){
+ const keyM=st.m.map(v=>v.toFixed(3)).join();if(keyM===drawn)return;drawn=keyM;
+ const s=BOX*K,c=s/2,rp=R*K;ctx.clearRect(0,0,s,s);ctx.drawImage(sphere,0,0);ctx.save();ctx.beginPath();ctx.arc(c,c,rp-.5,0,Math.PI*2);ctx.clip();
+ for(const [off,style] of [[.45*K,'rgba(0,0,0,0.5)'],[-.3*K,'rgba(255,255,255,0.27)']]){
+  ctx.beginPath();let pen=false;
+  for(let i=0;i<=72;i++){const t=(i/72)*Math.PI*2,ca=Math.cos(t),sa=Math.sin(t);
+   const p=body([SEAM_A[0]*ca+SEAM_B[0]*sa,SEAM_A[1]*ca+SEAM_B[1]*sa,SEAM_A[2]*ca+SEAM_B[2]*sa]);
+   if(p[2]<.02){pen=false;continue}const x=c+p[0]*rp+off*.7,y=c+p[1]*rp+off*.7;if(pen)ctx.lineTo(x,y);else ctx.moveTo(x,y);pen=true}
+  ctx.strokeStyle=style;ctx.lineWidth=.55*K;ctx.stroke();
+ }
+ for(const d of DOTS){const p=body(d);if(p[2]<-DOT_R)continue;
+  const e1=norm([p[1],-p[0],.0001]),e2=[p[1]*e1[2]-p[2]*e1[1],p[2]*e1[0]-p[0]*e1[2],p[0]*e1[1]-p[1]*e1[0]];
+  ctx.beginPath();
+  for(let i=0;i<24;i++){const t=(i/24)*Math.PI*2,ca=Math.cos(t)*Math.sin(DOT_R),sa=Math.sin(t)*Math.sin(DOT_R),cz=Math.cos(DOT_R);
+   let x=p[0]*cz+e1[0]*ca+e2[0]*sa,y=p[1]*cz+e1[1]*ca+e2[1]*sa;const z=p[2]*cz+e1[2]*ca+e2[2]*sa;
+   if(z<0){const l=Math.hypot(x,y)||1;x/=l;y/=l}if(i)ctx.lineTo(c+x*rp,c+y*rp);else ctx.moveTo(c+x*rp,c+y*rp)}
+  ctx.closePath();const w=.42+.58*wrapLight(p[0],p[1],Math.max(0,p[2]));
+  ctx.fillStyle=`rgb(${Math.round(246*w)},${Math.round(204*w)},${Math.round(22*w)})`;ctx.fill();
+ }
+ ctx.restore();
+}
+function draw(ahead){
+ const dt=st.rest?0:ahead,x=clamp(st.x+st.vx*dt,R,FW-R),y=clamp(st.y+st.vy*dt,R,FH-R);
+ const z=st.air?Math.max(0,st.z+st.vz*dt-.5*G*dt*dt):st.z,k=CAM/(CAM-z),t=`translate(${x.toFixed(2)}px, ${y.toFixed(2)}px)`;
+ ballEl.style.transform=`${t} scale(${k.toFixed(4)})`;grabEl.style.transform=t;
+ const off=4.5+SHADE*z;
+ shadowEl.style.transform=`translate(${(x+off).toFixed(2)}px, ${(y+off).toFixed(2)}px) rotate(45deg) scale(${(1.3+z*.0022).toFixed(4)}, ${(1+z*.0022).toFixed(4)})`;
+ shadowEl.style.filter=`blur(${(1.6+z*.07).toFixed(2)}px)`;shadowEl.style.opacity=(.52/(1+z/115)).toFixed(3);
+ contactEl.style.transform=`translate(${(x+1.5).toFixed(2)}px, ${(y+1.5).toFixed(2)}px)`;contactEl.style.opacity=clamp(1-z/12,0,1).toFixed(3);
+ paint();
+}
+(function startLoop(){const H=1/120;let last=performance.now(),acc=0;
+ const tick=()=>{const now=performance.now();acc+=Math.min(Math.max((now-last)/1000,0),1/30);last=now;while(acc>=H){step(H);acc-=H}draw(acc);requestAnimationFrame(tick)};
+ requestAnimationFrame(tick)})();
+
+// ================= input =================
+const tracker=(()=>{let s=[];return{reset(){s=[]},push(x,y){const t=performance.now();s.push({t,x,y});s=s.filter(a=>t-a.t<=80)},
+ velocity(){const now=performance.now(),r=s.filter(a=>now-a.t<=80);if(r.length<2)return{x:0,y:0};const a=r[0],b=r[r.length-1],dt=(b.t-a.t)/1000;return dt<=0?{x:0,y:0}:{x:(b.x-a.x)/dt,y:(b.y-a.y)/dt}}}})();
+const point=e=>{const r=bb.getBoundingClientRect();return{x:(e.clientX-r.left)/scale,y:(e.clientY-r.top)/scale}};
+grabEl.addEventListener('pointerdown',e=>{
+ if(e.button!==0)return;e.preventDefault();
+ const p=point(e),ox=st.x-p.x,oy=st.y-p.y;
+ Object.assign(st,{held:true,rest:false,air:false,auto:-1,caught:0,hx:st.x,hy:st.y});
+ grabEl.setPointerCapture(e.pointerId);grabEl.dataset.held='';tracker.reset();tracker.push(p.x,p.y);
+ const move=ev=>{const q=point(ev);st.hx=clamp(q.x+ox,LIFT,FW-LIFT);st.hy=clamp(q.y+oy,LIFT,FH-LIFT);tracker.push(q.x,q.y)};
+ const up=()=>{if(!st.held)return;st.held=false;st.air=true;const v=tracker.velocity(),sp=Math.hypot(v.x,v.y),k=sp>V_MAX?V_MAX/sp:1;
+  if(sp>30){st.vx=v.x*k;st.vy=v.y*k}delete grabEl.dataset.held;
+  ['pointermove','pointerup','pointercancel','lostpointercapture'].forEach((n,i)=>grabEl.removeEventListener(n,i?up:move))};
+ grabEl.addEventListener('pointermove',move);['pointerup','pointercancel','lostpointercapture'].forEach(n=>grabEl.addEventListener(n,up));
+});
+function send(date){
+ const i=st.cells.findIndex(c=>c.date===date);if(i<0||st.held)return;
+ if(reduce.matches){setValue(date);home(false);return}
+ if(st.rest&&st.at===i){setValue(date);return}
+ Object.assign(st,{auto:i,autoT:0,caught:0,rest:false});
+}
+gridEl.addEventListener('click',e=>{const b=e.target.closest('.bb-day');if(b){focusKey=b.dataset.value;send(b.dataset.value)}});
+gridEl.addEventListener('keydown',e=>{
+ const b=e.target.closest('.bb-day');if(!b)return;
+ const [y,m,d]=b.dataset.value.split('-').map(Number);let n=null;
+ const mv={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}[e.key];
+ if(mv)n=addDays(y,m,d,mv);
+ else if(e.key==='Home')n=addDays(y,m,d,-new Date(y,m-1,d).getDay());
+ else if(e.key==='End')n=addDays(y,m,d,6-new Date(y,m-1,d).getDay());
+ else if(e.key==='PageUp'||e.key==='PageDown'){const dt=new Date(y,m-1+(e.key==='PageUp'?-1:1),1);n=[dt.getFullYear(),dt.getMonth()+1,Math.min(d,dim(dt.getFullYear(),dt.getMonth()+1))]}
+ if(!n)return;e.preventDefault();
+ const k=key(...n);focusKey=k;
+ if(n[0]!==month.y||n[1]!==month.m){goMonth(n[0],n[1],k,true)}
+ else{gridEl.querySelectorAll('.bb-day').forEach(x=>x.tabIndex=x.dataset.value===k?0:-1)}
+ const f=gridEl.querySelector(`[data-value="${k}"]`);if(f)f.focus();
+});
+function goMonth(y,m,sel,keepFocus){
+ month={y,m};
+ const keep=value.startsWith(`${y}-${pad(m)}`);
+ if(!keep)value=sel||(y===ty&&m===tm?key(ty,tm,td):key(y,m,1));
+ if(!focusKey.startsWith(`${y}-${pad(m)}`))focusKey=value;
+ renderGrid();renderCaption();measure();home(!keep);
+ if(keepFocus){const f=gridEl.querySelector(`[data-value="${focusKey}"]`);if(f)f.focus()}
+}
+document.getElementById('prev').onclick=()=>{const dt=new Date(month.y,month.m-2,1);goMonth(dt.getFullYear(),dt.getMonth()+1)};
+document.getElementById('next').onclick=()=>{const dt=new Date(month.y,month.m,1);goMonth(dt.getFullYear(),dt.getMonth()+1)};
+document.getElementById('todayBtn').onclick=()=>{const k=key(ty,tm,td);if(month.y===ty&&month.m===tm){focusKey=k;send(k)}else{value=k;focusKey=k;goMonth(ty,tm,k)}};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// ================= boot =================
+renderGrid();renderCaption();
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(()=>{measure();home(true)});
+measure();home(false);
+</script>
+</body>
+</html>

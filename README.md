@@ -4,6 +4,8 @@ A Burmese-first family wall calendar. Every day shows the Gregorian date **and**
 
 **Live:** https://richardnaing.github.io/Burmese-Family-Calendar-/ (GitHub Pages) — open it on the wall tablet and tap the full-screen button.
 
+**Tactile calendar:** https://richardnaing.github.io/Burmese-Family-Calendar-/tactile/ — a paper-and-ball version: drag or flick the ball into a day to see its Myanmar date, moon phase and holidays.
+
 ## Views
 
 | View | What it shows |
@@ -30,6 +32,7 @@ npm test         # golden tests against the printed 2027 calendar
 ```
 
 - `src/app.html` — the app (HTML/CSS/JS). Edit this, then rebuild.
+- `src/tactile.html` — the tactile calendar; `python3 scripts/build-tactile.py` builds `tactile/index.html` (needs the Noto Sans Myanmar and Martian Mono font packages, see `FONTS_DIR`).
 - `vendor/mmcal/ceMmDateTime.js` — Myanmar calendar engine by Dr. Yan Naing Aye (MIT).
 - `scripts/build.mjs` — inlines the engine and embeds Noto Sans Myanmar + Inter as base64 woff2.
 - `tests/golden-2027.test.mjs` — every waxing/waning day of Jan, Feb, May and Dec 2027 must match the printed calendar (121/121), plus the 1389 New Year date.
