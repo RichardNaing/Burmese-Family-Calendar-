@@ -1,0 +1,9 @@
+mobile
+docs
+scripts
+tests
+vendor
+node_modules
+*.md
+package.json
+package-lock.json
