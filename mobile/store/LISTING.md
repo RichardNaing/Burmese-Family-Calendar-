@@ -17,7 +17,7 @@ Copy these into App Store Connect and Google Play Console.
 
 ## Description (English)
 
-Burmese Calendar puts the Myanmar calendar on your phone, in Burmese and English.
+Burmese Calendar puts the Myanmar calendar on your phone, in Burmese and English, on a tactile paper board: drag or flick the ball into a day to see its Myanmar date.
 
 • Every day shows its Myanmar date: year, month, waxing or waning day, in Burmese numerals
 • Full moon and new moon days at a glance
@@ -33,7 +33,7 @@ Design by IT Garden Malaysia (RN).
 
 ## Description (Burmese — add as a Myanmar localization)
 
-မြန်မာပြက္ခဒိန်ကို သင့်ဖုန်းထဲတွင် မြန်မာ၊ အင်္ဂလိပ် နှစ်ဘာသာဖြင့် ကြည့်ရှုနိုင်ပါပြီ။
+မြန်မာပြက္ခဒိန်ကို သင့်ဖုန်းထဲတွင် မြန်မာ၊ အင်္ဂလိပ် နှစ်ဘာသာဖြင့် ကြည့်ရှုနိုင်ပါပြီ။ ဘောလုံးကို ရက်တစ်ရက်ထဲ ဆွဲချ၍ မြန်မာရက်စွဲကို ကြည့်ပါ။
 
 • နေ့တိုင်း၏ မြန်မာ ခုနှစ်၊ လ၊ လဆန်း လဆုတ် ရက်များ
 • လပြည့်၊ လကွယ် နေ့များ

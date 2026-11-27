@@ -1,19 +1,24 @@
-// Paper-and-ink palette shared with the printed calendars.
+// Tactile palette — same values as the tactile wall calendar (src/tactile.html).
 export const C = {
-  paper: '#EFEDE7',
-  card: '#F7F6F2',
-  ink: '#1B1A18',
-  soft: '#6F6B64',
-  faint: '#A8A49C',
-  line: '#DAD6CD',
-  red: '#B3261E',
-  redSoft: '#F4E1DE',
-  gold: '#C49A2C',
-  goldSoft: '#F6EBCB',
-  today: '#1B1A18',
+  backdrop: '#D8D5CF',
+  paper: '#ECEAE6',
+  ink: '#141413',
+  soft: '#8B8983',
+  faint: '#B3B0A9',
+  line: 'rgba(20,20,19,0.2)',
+  mark: '#F2C81A',
+  red: '#B02A1F',
+  gold: '#B08D1A',
+  goldText: '#7A5F0C',
+  pillHi: '#F6F5F2',
+  pillLo: '#E2DFD9',
 };
 
 export const F = {
   my: 'NotoSansMyanmar_400Regular',
   myBold: 'NotoSansMyanmar_700Bold',
+  monoLight: 'MartianMono_300Light',
+  mono: 'MartianMono_400Regular',
+  monoMedium: 'MartianMono_500Medium',
+  monoBold: 'MartianMono_700Bold',
 };

@@ -1,126 +1,141 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
-import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View, type GestureResponderEvent } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { type ReactNode, useCallback, useState } from 'react';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MonthGrid } from '../../components/MonthGrid';
+import { Paper, Pill, Tag } from '../../components/Tactile';
+import { TactileBoard } from '../../components/TactileBoard';
 import { Txt } from '../../components/Txt';
-import { bn, type DayInfo, GREG_MONTHS, GREG_MONTHS_MY, MAX_YEAR, MIN_YEAR, monthData, parseKey, todayKey, yearHolidays } from '../../lib/calendar';
+import {
+  bn, burmeseDateLine, dateKey, dayInfo, GREG_MONTHS, GREG_MONTHS_MY, MAX_YEAR, MIN_YEAR, monthData, parseKey,
+  PHASES_EN, PHASES_MY, todayKey, WEEKDAYS_EN, WEEKDAYS_MY,
+} from '../../lib/calendar';
 import { t } from '../../lib/i18n';
 import { useSettings } from '../../lib/settings';
 import { C } from '../../lib/theme';
 
+const MAX_BOARD = 540;
+
 export default function CalendarScreen() {
   const { lang } = useSettings();
   const my = lang === 'my';
-  const now = new Date();
-  const [ym, setYm] = useState({ y: now.getFullYear(), m: now.getMonth() + 1 });
-  const today = todayKey();
-  const data = monthData(ym.y, ym.m);
+  const { width } = useWindowDimensions();
+  const [today, setToday] = useState(todayKey());
+  const [selected, setSelected] = useState(today);
+  const [scroll, setScroll] = useState(true);
+  useFocusEffect(useCallback(() => setToday(todayKey()), []));
 
-  const step = (delta: number) => {
-    setYm(({ y, m }) => {
-      let nm = m + delta, ny = y;
-      if (nm < 1) { nm = 12; ny--; }
-      if (nm > 12) { nm = 1; ny++; }
-      if (ny < MIN_YEAR || ny > MAX_YEAR) return { y, m };
-      return { y: ny, m: nm };
-    });
+  const sel = parseKey(selected);
+  const data = monthData(sel.y, sel.m);
+  const info = dayInfo(sel.y, sel.m, sel.d);
+
+  const boardW = Math.min(width - 20, MAX_BOARD);
+  const pad = 16;
+
+  const goMonth = (delta: number) => {
+    let m = sel.m + delta, y = sel.y;
+    if (m < 1) { m = 12; y--; }
+    if (m > 12) { m = 1; y++; }
+    if (y < MIN_YEAR || y > MAX_YEAR) return;
+    const tk = parseKey(today);
+    const d = tk.y === y && tk.m === m ? tk.d : 1;
+    setSelected(dateKey(y, m, d));
   };
 
-  const startX = useRef(0);
-  const onTouchStart = (e: GestureResponderEvent) => { startX.current = e.nativeEvent.pageX; };
-  const onTouchEnd = (e: GestureResponderEvent) => {
-    const dx = e.nativeEvent.pageX - startX.current;
-    if (Math.abs(dx) > 60) step(dx < 0 ? 1 : -1);
-  };
+  const tags: { text: string; color?: string }[] = [];
+  tags.push({ text: `${PHASES_MY[info.phase]} · ${PHASES_EN[info.phase]}${info.phase === 0 || info.phase === 2 ? ' ' + info.fortnightDay : ''}` });
+  if (info.sabbath) tags.push({ text: 'ဥပုသ်နေ့ · Sabbath', color: C.goldText });
+  if (info.sabbathEve) tags.push({ text: 'အဖိတ်နေ့ · Sabbath eve', color: C.goldText });
+  info.holidays.forEach((h) => tags.push({ text: `${h.my} · ${h.en}`, color: C.red }));
+  if (info.yatyaza) tags.push({ text: 'ရက်ရာဇာ · Yatyaza' });
+  if (info.pyathada) tags.push({ text: `${info.pyathada === 2 ? 'မွန်းလွဲ ' : ''}ပြဿဒါး · Pyathada` });
 
-  const open = (d: DayInfo) => router.push(`/day/${d.key}`);
-  const isCurrent = ym.y === now.getFullYear() && ym.m === now.getMonth() + 1;
-  const pre = `${ym.y}-${String(ym.m).padStart(2, '0')}`;
-  const monthHols = yearHolidays(ym.y).filter((h) => h.key.startsWith(pre) || (h.to ?? '').startsWith(pre));
-  const dayNum = (k: string) => (my ? bn(parseKey(k).d) : String(parseKey(k).d));
-  const span = (a: string, b?: string) => {
-    const from = a.startsWith(pre) ? dayNum(a) : '';
-    const to = b && b.startsWith(pre) ? dayNum(b) : '';
-    if (!b) return from;
-    return `${from}–${to}`;
-  };
+  const enLine = [
+    `${GREG_MONTHS[sel.m - 1]} ${sel.d}, ${sel.y}`,
+    `${PHASES_EN[info.phase]}${info.phase === 0 || info.phase === 2 ? ' ' + info.fortnightDay : ''}`,
+    `ME ${info.my}`,
+    `Sasana ${info.my + 1182}`,
+    `Naga ${info.nagahleEn}`,
+  ].join(' · ');
 
   return (
     <SafeAreaView style={st.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={st.pad}>
-        <View style={st.header}>
-          <View style={{ flex: 1 }}>
-            <Txt size={13} color={C.soft} bold>{my ? bn(ym.y) : ym.y}</Txt>
-            <Txt size={28} bold>{my ? GREG_MONTHS_MY[ym.m - 1] : GREG_MONTHS[ym.m - 1]}</Txt>
+      <ScrollView contentContainerStyle={st.scroll} scrollEnabled={scroll}>
+        <Paper style={{ width: boardW, alignSelf: 'center' }}>
+          <View style={{ padding: pad, paddingTop: 18 }}>
+            <View style={st.headTop}>
+              <Txt size={11.5} color={C.soft} style={{ flex: 1 }}>{`${data.myYears} · ${data.myMonths.join(' – ')}`}</Txt>
+              <View style={st.nav}>
+                <Pill label="‹" onPress={() => goMonth(-1)} accessibilityLabel="Previous month" />
+                <Pill label={my ? 'ယနေ့' : 'Today'} onPress={() => setSelected(today)} accessibilityLabel="Today" />
+                <Pill label="›" onPress={() => goMonth(1)} accessibilityLabel="Next month" />
+              </View>
+            </View>
+            <View style={st.caption}>
+              <Txt size={74} weight="light" style={{ lineHeight: 74, letterSpacing: -4, marginLeft: -3, minWidth: 60 }}>{sel.d}</Txt>
+              <View style={{ flex: 1, paddingBottom: 2, marginLeft: 10 }}>
+                <Txt size={17} style={{ letterSpacing: -0.4 }}>{WEEKDAYS_EN[info.weekday]}</Txt>
+                <Txt size={13}>{burmeseDateLine(info)}</Txt>
+              </View>
+            </View>
+            <View style={st.monthRow}>
+              <Txt size={17} color={C.soft} style={{ letterSpacing: -0.4 }}>{`${GREG_MONTHS[sel.m - 1]} ${sel.y}`}</Txt>
+              <Txt size={12} color={C.soft}>{`${GREG_MONTHS_MY[sel.m - 1]} ${bn(sel.y)}`}</Txt>
+            </View>
+
+            <TactileBoard
+              data={data}
+              width={boardW - pad * 2}
+              selected={selected}
+              today={today}
+              onSelect={setSelected}
+              onHold={(h) => setScroll(!h)}
+            />
+
+            <View style={st.info}>
+              <Txt size={15}>{`${WEEKDAYS_MY[info.weekday]}နေ့ · ${burmeseDateLine(info)}`}</Txt>
+              <Txt size={9.5} caps color={C.soft} style={{ marginTop: 2 }}>{enLine}</Txt>
+              <View style={st.tags}>
+                {tags.map((tg, i) => <Tag key={i} color={tg.color}>{tg.text}</Tag>)}
+              </View>
+              <View style={{ flexDirection: 'row', marginTop: 14 }}>
+                <Pill label={my ? 'အသေးစိတ် ›' : 'Details ›'} onPress={() => router.push(`/day/${selected}`)} />
+              </View>
+            </View>
+
+            <View style={st.legend}>
+              <Legend shape={<View style={[st.dot, { backgroundColor: C.red }]} />} label={t(lang, 'fullMoon')} />
+              <Legend shape={<View style={[st.dot, { backgroundColor: C.ink }]} />} label={t(lang, 'newMoon')} />
+              <Legend shape={<View style={{ width: 9, height: 9, borderRadius: 2, backgroundColor: C.red }} />} label={t(lang, 'holiday')} />
+              <Legend shape={<View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: C.gold }} />} label={t(lang, 'sabbath')} />
+            </View>
           </View>
-          {!isCurrent ? (
-            <Pressable onPress={() => setYm({ y: now.getFullYear(), m: now.getMonth() + 1 })} style={st.todayBtn} accessibilityRole="button">
-              <Txt size={13} bold color={C.red}>{t(lang, 'goToday')}</Txt>
-            </Pressable>
-          ) : null}
-          <Pressable onPress={() => step(-1)} style={st.arrow} accessibilityLabel="Previous month" hitSlop={8}>
-            <Ionicons name="chevron-back" size={22} color={C.ink} />
-          </Pressable>
-          <Pressable onPress={() => step(1)} style={st.arrow} accessibilityLabel="Next month" hitSlop={8}>
-            <Ionicons name="chevron-forward" size={22} color={C.ink} />
-          </Pressable>
-        </View>
-        <Txt size={14} color={C.red} style={{ marginBottom: 8 }}>
-          {`${data.myYears} · ${data.myMonths.join(' – ')}`}
-        </Txt>
-
-        <View style={st.card} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-          <MonthGrid data={data} lang={lang} today={today} onPress={open} />
-        </View>
-
-        <View style={st.legend}>
-          <Legend dot={C.red} label={t(lang, 'fullMoon')} />
-          <Legend dot={C.ink} label={t(lang, 'newMoon')} />
-          <Legend dot={C.gold} small label={t(lang, 'sabbath')} />
-          <Legend box label={t(lang, 'holiday')} />
-        </View>
-
-        {monthHols.length ? (
-          <View style={[st.card, { paddingVertical: 6 }]}>
-            {monthHols.map((h) => (
-              <Pressable key={h.key + h.en} onPress={() => router.push(`/day/${h.key}`)} style={st.holRow}>
-                <Txt size={15} bold color={C.red} style={{ width: 64 }}>{span(h.key, h.to)}</Txt>
-                <View style={{ flex: 1 }}>
-                  <Txt size={15}>{h.my}</Txt>
-                  <Txt size={12} color={C.soft}>{h.en}</Txt>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
+        </Paper>
+        <Txt size={10} color="#6F6C66" style={st.hint}>Drag or flick the ball into a day · tap a day</Txt>
+        <Txt size={11} color="#6F6C66" style={[st.hint, { marginTop: 0 }]}>ဘောလုံးကို ရက်တစ်ရက်ထဲ ဆွဲချပါ</Txt>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function Legend({ dot, label, small, box }: { dot?: string; label: string; small?: boolean; box?: boolean }) {
+function Legend({ shape, label }: { shape: ReactNode; label: string }) {
   return (
-    <View style={st.legendItem}>
-      {box ? (
-        <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: C.redSoft, borderWidth: 1, borderColor: C.red }} />
-      ) : (
-        <View style={{ width: small ? 6 : 10, height: small ? 6 : 10, borderRadius: 5, backgroundColor: dot }} />
-      )}
-      <Txt size={12} color={C.soft}>{label}</Txt>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+      {shape}
+      <Txt size={9} caps weight="medium" color={C.soft}>{label}</Txt>
     </View>
   );
 }
 
 const st = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.paper },
-  pad: { padding: 16, paddingBottom: 32, gap: 4 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  arrow: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: C.card, borderWidth: StyleSheet.hairlineWidth, borderColor: C.line },
-  todayBtn: { paddingHorizontal: 12, height: 32, borderRadius: 16, justifyContent: 'center', borderWidth: 1, borderColor: C.red, marginRight: 4 },
-  card: { backgroundColor: C.card, borderRadius: 16, padding: 8, borderWidth: StyleSheet.hairlineWidth, borderColor: C.line, marginTop: 4 },
-  legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, paddingVertical: 10, paddingHorizontal: 4 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  holRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.line },
+  safe: { flex: 1, backgroundColor: C.backdrop },
+  scroll: { paddingVertical: 12, paddingBottom: 28 },
+  headTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  nav: { flexDirection: 'row', gap: 6 },
+  caption: { flexDirection: 'row', alignItems: 'flex-end', marginTop: 10 },
+  monthRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, marginBottom: 10 },
+  info: { paddingTop: 14, minHeight: 120 },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
+  legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 16 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  hint: { textAlign: 'center', marginTop: 12 },
 });
