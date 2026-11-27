@@ -6,6 +6,8 @@ A Burmese-first family wall calendar. Every day shows the Gregorian date **and**
 
 **Tactile calendar:** https://richardnaing.github.io/Burmese-Family-Calendar-/tactile/ — a paper-and-ball version: drag or flick the ball into a day to see its Myanmar date, moon phase and holidays.
 
+**Phone app (iPhone & Android):** source in [`mobile/`](mobile/). Try the web preview at https://richardnaing.github.io/Burmese-Family-Calendar-/app/. Store publishing steps are in [`mobile/PUBLISHING.md`](mobile/PUBLISHING.md). Privacy policy: https://richardnaing.github.io/Burmese-Family-Calendar-/privacy/
+
 ## Views
 
 | View | What it shows |
